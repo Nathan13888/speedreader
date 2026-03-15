@@ -1,6 +1,6 @@
 "use client";
 
-import { FontSelector } from "./FontSelector";
+import { FontDropdown } from "../shared/FontDropdown";
 import styles from "./PlaybackControls.module.css";
 
 const WPM_STEP = 25;
@@ -114,7 +114,7 @@ export function PlaybackControls({
           </button>
         </div>
 
-        <FontSelector currentFontId={fontId} onFontChange={onFontChange} />
+        <FontDropdown currentFontId={fontId} onFontChange={onFontChange} position="above" />
       </div>
     </div>
   );

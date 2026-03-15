@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRSVPPlayer } from "../../hooks/useRSVPPlayer";
-import { DEFAULT_FONT_ID, getFontById } from "../../lib/fonts";
-import { loadFont, loadWpm, saveFont } from "../../lib/session";
+import { getFontById } from "../../lib/fonts";
+import { loadWpm } from "../../lib/session";
 import { PlaybackControls } from "./PlaybackControls";
 import styles from "./ReaderZone.module.css";
 import { RSVPDisplay } from "./RSVPDisplay";
@@ -13,19 +13,15 @@ interface ReaderZoneProps {
   text: string;
   startIndex: number;
   onClose: () => void;
+  fontId: string;
+  onFontChange: (id: string) => void;
 }
 
-export function ReaderZone({ text, startIndex, onClose }: ReaderZoneProps) {
+export function ReaderZone({ text, startIndex, onClose, fontId, onFontChange }: ReaderZoneProps) {
   const savedWpm = loadWpm() ?? 250;
   const player = useRSVPPlayer(savedWpm);
 
-  const [fontId, setFontId] = useState(() => loadFont() ?? DEFAULT_FONT_ID);
   const font = getFontById(fontId);
-
-  function handleFontChange(id: string) {
-    saveFont(id);
-    setFontId(id);
-  }
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: player.load is stable; re-running on text/startIndex change is intentional
   useEffect(() => {
@@ -109,7 +105,7 @@ export function ReaderZone({ text, startIndex, onClose }: ReaderZoneProps) {
           onSeek={player.seek}
           onWpmChange={player.setWpm}
           fontId={fontId}
-          onFontChange={handleFontChange}
+          onFontChange={onFontChange}
         />
       </div>
 

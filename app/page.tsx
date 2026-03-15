@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { FontDropdown } from "../components/shared/FontDropdown";
 import { IngestionZone } from "../components/ingestion/IngestionZone";
 import { ReaderZone } from "../components/reader/ReaderZone";
-import { loadSession } from "../lib/session";
+import { DEFAULT_FONT_ID } from "../lib/fonts";
+import { loadFont, loadSession, saveFont } from "../lib/session";
 import styles from "./page.module.css";
 
 type ResumePromptState = "pending" | "dismissed";
@@ -17,6 +19,7 @@ export default function Home() {
     index: number;
     wpm: number;
   } | null>(null);
+  const [fontId, setFontId] = useState<string>(() => loadFont() ?? DEFAULT_FONT_ID);
 
   useEffect(() => {
     const session = loadSession();
@@ -25,6 +28,11 @@ export default function Home() {
       setResumePrompt("pending");
     }
   }, []);
+
+  function handleFontChange(id: string) {
+    saveFont(id);
+    setFontId(id);
+  }
 
   function handleResume() {
     if (!savedSession) return;
@@ -65,11 +73,22 @@ export default function Home() {
       )}
 
       <div className={`${styles.zone} ${text !== null ? styles.hidden : ""}`}>
+        <div className={styles.floatingFont}>
+          <FontDropdown currentFontId={fontId} onFontChange={handleFontChange} position="below" />
+        </div>
         <IngestionZone onStart={handleStart} />
       </div>
 
       <div className={`${styles.zone} ${text === null ? styles.hidden : ""}`}>
-        {text !== null && <ReaderZone text={text} startIndex={startIndex} onClose={handleClose} />}
+        {text !== null && (
+          <ReaderZone
+            text={text}
+            startIndex={startIndex}
+            onClose={handleClose}
+            fontId={fontId}
+            onFontChange={handleFontChange}
+          />
+        )}
       </div>
     </main>
   );
