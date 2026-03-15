@@ -1,0 +1,58 @@
+.outer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.content {
+  height: 100%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.guide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+  cursor: col-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  touch-action: none;
+}
+
+.guide:hover {
+  background: var(--accent);
+}
+
+.handle {
+  width: 12px;
+  height: 32px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: col-resize;
+  position: relative;
+  left: -5px;
+}
+
+.guide:hover .handle {
+  border-color: var(--accent);
+}
+
+@media (max-width: 480px) {
+  .guide {
+    display: none;
+  }
+
+  .content {
+    width: 100%;
+    flex: 1;
+  }
+}

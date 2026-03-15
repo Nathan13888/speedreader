@@ -151,8 +151,40 @@
   color: var(--text);
 }
 
+.modeToggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.modeBtn {
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: transparent;
+  min-height: 32px;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.modeBtn:hover:not(.modeBtnActive) {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.modeBtnActive {
+  background: var(--surface-2);
+  color: var(--accent);
+}
+
 @media (max-width: 480px) {
   .row {
     justify-content: center;
+  }
+
+  .modeToggle {
+    display: none;
   }
 }

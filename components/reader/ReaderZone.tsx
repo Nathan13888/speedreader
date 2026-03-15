@@ -1,9 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRSVPPlayer } from "../../hooks/useRSVPPlayer";
+import { useColumnWidth } from "../../hooks/useColumnWidth";
 import { getFontById } from "../../lib/fonts";
+import { type ReadingMode, loadMode, saveMode } from "../../lib/readingMode";
 import { loadWpm } from "../../lib/session";
+import { ColumnGuides } from "./ColumnGuides";
+import { ParagraphDisplay } from "./ParagraphDisplay";
 import { PlaybackControls } from "./PlaybackControls";
 import styles from "./ReaderZone.module.css";
 import { RSVPDisplay } from "./RSVPDisplay";
@@ -20,13 +24,22 @@ interface ReaderZoneProps {
 export function ReaderZone({ text, startIndex, onClose, fontId, onFontChange }: ReaderZoneProps) {
   const savedWpm = loadWpm() ?? 250;
   const player = useRSVPPlayer(savedWpm);
-
   const font = getFontById(fontId);
+  const [mode, setMode] = useState<ReadingMode>(() => loadMode() ?? "rsvp");
+  const { columnWidth, setColumnWidth, minWidth, maxWidth, containerRef } = useColumnWidth();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: player.load is stable; re-running on text/startIndex change is intentional
   useEffect(() => {
     player.load(text, startIndex);
   }, [text, startIndex]);
+
+  const handleModeToggle = useCallback(() => {
+    setMode((prev) => {
+      const next: ReadingMode = prev === "rsvp" ? "paragraph" : "rsvp";
+      saveMode(next);
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -53,6 +66,10 @@ export function ReaderZone({ text, startIndex, onClose, fontId, onFontChange }: 
         case "]":
           player.setWpm(player.wpm + 25);
           break;
+        case "m":
+        case "M":
+          handleModeToggle();
+          break;
         case "Escape":
           player.pause();
           onClose();
@@ -61,7 +78,7 @@ export function ReaderZone({ text, startIndex, onClose, fontId, onFontChange }: 
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [player, onClose]);
+  }, [player, onClose, handleModeToggle]);
 
   const currentWord = player.words[player.index] ?? "";
 
@@ -88,9 +105,33 @@ export function ReaderZone({ text, startIndex, onClose, fontId, onFontChange }: 
         />
       </div>
 
-      <div className={styles.displayArea}>
-        <RSVPDisplay word={currentWord} isPlaying={player.isPlaying} fontFamily={font.fontFamily} />
-      </div>
+      {mode === "rsvp" ? (
+        <div className={styles.displayArea}>
+          <RSVPDisplay
+            word={currentWord}
+            isPlaying={player.isPlaying}
+            fontFamily={font.fontFamily}
+          />
+        </div>
+      ) : (
+        <div className={styles.displayAreaParagraph}>
+          <ColumnGuides
+            columnWidth={columnWidth}
+            onWidthChange={setColumnWidth}
+            minWidth={minWidth}
+            maxWidth={maxWidth}
+            containerRef={containerRef}
+          >
+            <ParagraphDisplay
+              words={player.words}
+              currentIndex={player.index}
+              isPlaying={player.isPlaying}
+              fontFamily={font.fontFamily}
+              onWordClick={player.seek}
+            />
+          </ColumnGuides>
+        </div>
+      )}
 
       <div className={styles.controlsArea}>
         <PlaybackControls
@@ -106,6 +147,8 @@ export function ReaderZone({ text, startIndex, onClose, fontId, onFontChange }: 
           onWpmChange={player.setWpm}
           fontId={fontId}
           onFontChange={onFontChange}
+          mode={mode}
+          onModeToggle={handleModeToggle}
         />
       </div>
 
@@ -115,6 +158,7 @@ export function ReaderZone({ text, startIndex, onClose, fontId, onFontChange }: 
         <kbd>→</kbd> seek &nbsp;·&nbsp;
         <kbd>[</kbd>
         <kbd>]</kbd> WPM &nbsp;·&nbsp;
+        <kbd>M</kbd> mode &nbsp;·&nbsp;
         <kbd>Esc</kbd> back
       </div>
     </div>

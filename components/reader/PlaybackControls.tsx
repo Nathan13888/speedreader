@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReadingMode } from "../../lib/readingMode";
 import { FontDropdown } from "../shared/FontDropdown";
 import styles from "./PlaybackControls.module.css";
 
@@ -20,6 +21,8 @@ interface PlaybackControlsProps {
   onWpmChange: (wpm: number) => void;
   fontId: string;
   onFontChange: (id: string) => void;
+  mode: ReadingMode;
+  onModeToggle: () => void;
 }
 
 export function PlaybackControls({
@@ -35,6 +38,8 @@ export function PlaybackControls({
   onWpmChange,
   fontId,
   onFontChange,
+  mode,
+  onModeToggle,
 }: PlaybackControlsProps) {
   function handleScrub(e: React.ChangeEvent<HTMLInputElement>) {
     const fraction = Number(e.target.value) / 1000;
@@ -111,6 +116,27 @@ export function PlaybackControls({
             title="Forward 10 words  →"
           >
             10 ⟩⟩
+          </button>
+        </div>
+
+        <div className={styles.modeToggle}>
+          <button
+            type="button"
+            className={`${styles.modeBtn} ${mode === "rsvp" ? styles.modeBtnActive : ""}`}
+            onClick={mode !== "rsvp" ? onModeToggle : undefined}
+            title="RSVP mode  M"
+            aria-pressed={mode === "rsvp"}
+          >
+            Word
+          </button>
+          <button
+            type="button"
+            className={`${styles.modeBtn} ${mode === "paragraph" ? styles.modeBtnActive : ""}`}
+            onClick={mode !== "paragraph" ? onModeToggle : undefined}
+            title="Paragraph mode  M"
+            aria-pressed={mode === "paragraph"}
+          >
+            Para
           </button>
         </div>
 
