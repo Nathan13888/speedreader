@@ -1,0 +1,15 @@
+pre-commit:
+  commands:
+    format-fix:
+      run: bun biome format --write .
+    lint-fix:
+      run: bun biome lint --fix .
+
+pre-push:
+  commands:
+    format-check:
+      run: bun biome format --check .
+    lint-check:
+      run: bun biome lint .
+    test:
+      run: bun test
