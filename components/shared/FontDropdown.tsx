@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FONT_OPTIONS, getFontById } from "../../lib/fonts";
 import { useClickOutside } from "../../hooks/useClickOutside";
+import { FONT_OPTIONS, getFontById } from "../../lib/fonts";
 import styles from "./FontDropdown.module.css";
 
 const CATEGORY_LABELS: Record<string, string> = {

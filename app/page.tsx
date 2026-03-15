@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FontDropdown } from "../components/shared/FontDropdown";
 import { IngestionZone } from "../components/ingestion/IngestionZone";
 import { ReaderZone } from "../components/reader/ReaderZone";
+import { FontDropdown } from "../components/shared/FontDropdown";
 import { DEFAULT_FONT_ID } from "../lib/fonts";
 import { loadFont, loadSession, saveFont } from "../lib/session";
 import styles from "./page.module.css";
