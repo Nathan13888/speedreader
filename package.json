@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "opennextjs-cloudflare build",
+    "build": "next build",
     "preview": "wrangler dev",
     "deploy": "opennextjs-cloudflare build && wrangler deploy",
     "test": "bun test",
@@ -15,12 +15,13 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.7",
-    "@opennextjs/cloudflare": "^1.17.1",
+    "@opennextjs/cloudflare": "^1.8.4",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "bun-types": "latest",
     "lefthook": "^2.1.4",
-    "wrangler": "^4.73.0"
+    "typescript": "5.9.3",
+    "wrangler": "^4.35.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
