@@ -1,0 +1,56 @@
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: clamp(120px, 20vw, 200px);
+  width: 100%;
+  user-select: none;
+}
+
+.wordWrap {
+  display: flex;
+  align-items: baseline;
+  font-family: var(--font-mono);
+  font-size: clamp(32px, 6vw, 72px);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  line-height: 1;
+  white-space: nowrap;
+  /* shift so the pivot character sits at a fixed horizontal position */
+  position: relative;
+}
+
+/* subtle brightness pulse on play */
+.playing {
+  animation: none;
+}
+
+.before {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.pivot {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.after {
+  color: var(--text);
+}
+
+/* thin vertical alignment guide under the pivot */
+.pivotLine {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 1px;
+  opacity: 0.5;
+}
