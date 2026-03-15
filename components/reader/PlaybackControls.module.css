@@ -74,10 +74,6 @@
   gap: 8px;
 }
 
-.wpmGroupPlaceholder {
-  width: 120px;
-}
-
 .wpmLabel {
   font-size: 13px;
   color: var(--text-muted);
@@ -158,8 +154,5 @@
 @media (max-width: 480px) {
   .row {
     justify-content: center;
-  }
-  .wpmGroupPlaceholder {
-    display: none;
   }
 }

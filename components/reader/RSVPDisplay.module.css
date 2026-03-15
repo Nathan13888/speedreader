@@ -10,16 +10,15 @@
 }
 
 .wordWrap {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: baseline;
-  font-family: var(--font-mono);
   font-size: clamp(32px, 6vw, 72px);
   font-weight: 500;
   letter-spacing: 0.02em;
   color: var(--text);
   line-height: 1;
   white-space: nowrap;
-  /* shift so the pivot character sits at a fixed horizontal position */
   position: relative;
 }
 
@@ -31,6 +30,7 @@
 .before {
   color: var(--text-muted);
   opacity: 0.6;
+  text-align: right;
 }
 
 .pivot {
@@ -40,6 +40,7 @@
 
 .after {
   color: var(--text);
+  text-align: left;
 }
 
 /* thin vertical alignment guide under the pivot */

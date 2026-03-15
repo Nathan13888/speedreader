@@ -1,5 +1,6 @@
 "use client";
 
+import { FontSelector } from "./FontSelector";
 import styles from "./PlaybackControls.module.css";
 
 const WPM_STEP = 25;
@@ -17,6 +18,8 @@ interface PlaybackControlsProps {
   onSeekDelta: (delta: number) => void;
   onSeek: (index: number) => void;
   onWpmChange: (wpm: number) => void;
+  fontId: string;
+  onFontChange: (id: string) => void;
 }
 
 export function PlaybackControls({
@@ -30,6 +33,8 @@ export function PlaybackControls({
   onSeekDelta,
   onSeek,
   onWpmChange,
+  fontId,
+  onFontChange,
 }: PlaybackControlsProps) {
   function handleScrub(e: React.ChangeEvent<HTMLInputElement>) {
     const fraction = Number(e.target.value) / 1000;
@@ -109,7 +114,7 @@ export function PlaybackControls({
           </button>
         </div>
 
-        <div className={styles.wpmGroupPlaceholder} aria-hidden="true" />
+        <FontSelector currentFontId={fontId} onFontChange={onFontChange} />
       </div>
     </div>
   );

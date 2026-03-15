@@ -1,10 +1,6 @@
 {
   "compilerOptions": {
-    "lib": [
-      "ESNext",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "module": "esnext",
     "target": "esnext",
     "moduleResolution": "bundler",
@@ -23,9 +19,7 @@
         "name": "next"
       }
     ],
-    "types": [
-      "bun-types"
-    ],
+    "types": ["bun-types"],
     "incremental": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
@@ -38,7 +32,5 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

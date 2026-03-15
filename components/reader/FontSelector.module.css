@@ -1,0 +1,29 @@
+.select {
+  width: 120px;
+  height: 32px;
+  padding: 0 8px;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+  appearance: auto;
+  min-height: 44px;
+}
+
+.select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.select:hover {
+  background: var(--border);
+}
+
+@media (max-width: 480px) {
+  .select {
+    display: none;
+  }
+}

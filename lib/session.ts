@@ -57,3 +57,19 @@ export function saveWpm(wpm: number): void {
     // ignore
   }
 }
+
+export function loadFont(): string | null {
+  try {
+    return localStorage.getItem("speedreader_font");
+  } catch {
+    return null;
+  }
+}
+
+export function saveFont(fontId: string): void {
+  try {
+    localStorage.setItem("speedreader_font", fontId);
+  } catch {
+    // ignore
+  }
+}

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRSVPPlayer } from "../../hooks/useRSVPPlayer";
-import { loadWpm } from "../../lib/session";
+import { DEFAULT_FONT_ID, getFontById } from "../../lib/fonts";
+import { loadFont, loadWpm, saveFont } from "../../lib/session";
 import { PlaybackControls } from "./PlaybackControls";
 import styles from "./ReaderZone.module.css";
 import { RSVPDisplay } from "./RSVPDisplay";
@@ -17,6 +18,14 @@ interface ReaderZoneProps {
 export function ReaderZone({ text, startIndex, onClose }: ReaderZoneProps) {
   const savedWpm = loadWpm() ?? 250;
   const player = useRSVPPlayer(savedWpm);
+
+  const [fontId, setFontId] = useState(() => loadFont() ?? DEFAULT_FONT_ID);
+  const font = getFontById(fontId);
+
+  function handleFontChange(id: string) {
+    saveFont(id);
+    setFontId(id);
+  }
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: player.load is stable; re-running on text/startIndex change is intentional
   useEffect(() => {
@@ -84,7 +93,7 @@ export function ReaderZone({ text, startIndex, onClose }: ReaderZoneProps) {
       </div>
 
       <div className={styles.displayArea}>
-        <RSVPDisplay word={currentWord} isPlaying={player.isPlaying} />
+        <RSVPDisplay word={currentWord} isPlaying={player.isPlaying} fontFamily={font.fontFamily} />
       </div>
 
       <div className={styles.controlsArea}>
@@ -99,6 +108,8 @@ export function ReaderZone({ text, startIndex, onClose }: ReaderZoneProps) {
           onSeekDelta={player.seekDelta}
           onSeek={player.seek}
           onWpmChange={player.setWpm}
+          fontId={fontId}
+          onFontChange={handleFontChange}
         />
       </div>
 

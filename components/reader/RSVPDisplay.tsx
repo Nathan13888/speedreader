@@ -6,14 +6,18 @@ import styles from "./RSVPDisplay.module.css";
 interface RSVPDisplayProps {
   word: string;
   isPlaying: boolean;
+  fontFamily: string;
 }
 
-export function RSVPDisplay({ word, isPlaying }: RSVPDisplayProps) {
+export function RSVPDisplay({ word, isPlaying, fontFamily }: RSVPDisplayProps) {
   const { before, pivot, after } = splitOrp(word);
 
   return (
     <div className={styles.stage} aria-live="off" aria-atomic="true">
-      <div className={`${styles.wordWrap} ${isPlaying ? styles.playing : ""}`}>
+      <div
+        className={`${styles.wordWrap} ${isPlaying ? styles.playing : ""}`}
+        style={{ fontFamily }}
+      >
         <span className={styles.before}>{before}</span>
         <span className={styles.pivot}>{pivot}</span>
         <span className={styles.after}>{after}</span>
