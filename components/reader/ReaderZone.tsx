@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRSVPPlayer } from "../../hooks/useRSVPPlayer";
 import { useColumnWidth } from "../../hooks/useColumnWidth";
+import { useRSVPPlayer } from "../../hooks/useRSVPPlayer";
 import { getFontById } from "../../lib/fonts";
-import { type ReadingMode, loadMode, saveMode } from "../../lib/readingMode";
+import { loadMode, type ReadingMode, saveMode } from "../../lib/readingMode";
 import { loadWpm } from "../../lib/session";
 import { ColumnGuides } from "./ColumnGuides";
 import { ParagraphDisplay } from "./ParagraphDisplay";
