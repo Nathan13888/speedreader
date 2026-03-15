@@ -7,9 +7,7 @@ pre-commit:
 
 pre-push:
   commands:
-    format-check:
-      run: bun biome format --check .
-    lint-check:
-      run: bun biome lint .
+    check:
+      run: bun biome check .
     test:
       run: bun test
