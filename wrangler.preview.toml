@@ -1,0 +1,9 @@
+name = "speedreader-preview"
+main = ".open-next/worker.js"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+assets = { directory = ".open-next/assets", binding = "ASSETS" }
+
+workers_dev = true
+preview_urls = true
