@@ -58,7 +58,7 @@
   margin-top: 12px;
 }
 
-kbd {
+.shortcutHint kbd {
   display: inline-block;
   padding: 1px 5px;
   background: var(--surface-2);
