@@ -117,6 +117,139 @@ export function stenoKeysFromCode(code: string): readonly StenoKey[] {
 }
 
 /**
+ * Inverse of `QWERTY_CODE_TO_STENO`: every QWERTY code that produces a given
+ * steno paddle. `S-` and `*` straddle two rows, so they map to multiple codes.
+ */
+const STENO_TO_QWERTY_CODES: Record<string, readonly string[]> = (() => {
+  const acc: Record<string, string[]> = {};
+  for (const [code, keys] of Object.entries(QWERTY_CODE_TO_STENO)) {
+    for (const key of keys) {
+      let bucket = acc[key];
+      if (!bucket) {
+        bucket = [];
+        acc[key] = bucket;
+      }
+      bucket.push(code);
+    }
+  }
+  return acc;
+})();
+
+/** QWERTY codes whose press emits a given steno paddle. */
+export function qwertyCodesForStenoKey(key: StenoKey): readonly string[] {
+  return STENO_TO_QWERTY_CODES[key] ?? [];
+}
+
+// Canonical Plover outline order, character-by-character, paired with the
+// paddle each position represents. Duplicated letters (S, T, P, R, G) appear
+// in both banks; ordered walk disambiguates them.
+const CANONICAL_CHARS = [
+  "#",
+  "S",
+  "T",
+  "K",
+  "P",
+  "W",
+  "H",
+  "R",
+  "A",
+  "O",
+  "*",
+  "E",
+  "U",
+  "F",
+  "R",
+  "P",
+  "B",
+  "L",
+  "G",
+  "T",
+  "S",
+  "D",
+  "Z",
+] as const;
+const CANONICAL_KEYS: readonly StenoKey[] = [
+  "#",
+  "S-",
+  "T-",
+  "K-",
+  "P-",
+  "W-",
+  "H-",
+  "R-",
+  "A-",
+  "O-",
+  "*",
+  "-E",
+  "-U",
+  "-F",
+  "-R",
+  "-P",
+  "-B",
+  "-L",
+  "-G",
+  "-T",
+  "-S",
+  "-D",
+  "-Z",
+];
+
+// Plover's digit convention: each digit char in an outline implies the
+// paddle at the matching position plus the `#` number bar.
+const DIGIT_TO_KEY: Record<string, StenoKey> = {
+  "1": "S-",
+  "2": "T-",
+  "3": "P-",
+  "4": "H-",
+  "5": "A-",
+  "0": "O-",
+  "6": "-F",
+  "7": "-P",
+  "8": "-L",
+  "9": "-T",
+};
+
+/**
+ * Decode the first stroke of a Plover outline into the set of paddles needed
+ * to type it. Multi-stroke outlines (e.g. `TKPW/HRO`) only return stroke one,
+ * since the user has to type them sequentially. Returns paddles in canonical
+ * Plover order with no duplicates.
+ */
+export function decodeOutline(outline: string): StenoKey[] {
+  const firstStroke = outline.split("/")[0] ?? "";
+  const seen = new Set<StenoKey>();
+  const result: StenoKey[] = [];
+  let canonicalIdx = 0;
+  let sawDigit = false;
+
+  function push(key: StenoKey) {
+    if (seen.has(key)) return;
+    seen.add(key);
+    result.push(key);
+  }
+
+  for (const ch of firstStroke) {
+    if (ch === "-") continue;
+    const digitKey = DIGIT_TO_KEY[ch];
+    if (digitKey !== undefined) {
+      sawDigit = true;
+      push(digitKey);
+      continue;
+    }
+    while (canonicalIdx < CANONICAL_CHARS.length && CANONICAL_CHARS[canonicalIdx] !== ch) {
+      canonicalIdx++;
+    }
+    if (canonicalIdx >= CANONICAL_CHARS.length) break;
+    const key = CANONICAL_KEYS[canonicalIdx];
+    if (key !== undefined) push(key);
+    canonicalIdx++;
+  }
+
+  if (sawDigit) push("#");
+  return result;
+}
+
+/**
  * Encode a set of pressed steno keys into a Plover outline string. Returns an
  * empty string for the empty set.
  */

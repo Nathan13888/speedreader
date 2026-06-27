@@ -1,8 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useKeyboardPress } from "../../hooks/useKeyboardPress";
+import { useStenoHint } from "../../hooks/useStenoHint";
 import type { RenderedWord } from "../../lib/typing/charState";
+import { decodeOutline, qwertyCodesForStenoKey } from "../../lib/typing/steno/layout";
 import type { DictionaryWorkerClient } from "../../lib/typing/steno/workerClient";
 import type { CaretStyle, TypingInputMode } from "../../lib/typing/types";
 import { KeyboardHud } from "./KeyboardHud";
@@ -57,6 +59,21 @@ export function TypingActiveZone({
   showKeyboardHud,
 }: TypingActiveZoneProps) {
   const pressedKeys = useKeyboardPress(showKeyboardHud);
+  const hint = useStenoHint(showHints ? stenoClient : null, targetSuffix);
+  const hintCodes = useMemo<ReadonlySet<string>>(() => {
+    if (!showHints || inputMode !== "steno" || !hint) return new Set();
+    const codes = new Set<string>();
+    if (hint.kind === "undo") {
+      for (const code of qwertyCodesForStenoKey("*")) codes.add(code);
+      return codes;
+    }
+    if (hint.kind === "hit") {
+      for (const key of decodeOutline(hint.outline)) {
+        for (const code of qwertyCodesForStenoKey(key)) codes.add(code);
+      }
+    }
+    return codes;
+  }, [hint, showHints, inputMode]);
   const hiddenInputRef = useRef<HTMLInputElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -154,11 +171,7 @@ export function TypingActiveZone({
       </div>
 
       {showHints && (
-        <StenoHintOverlay
-          client={stenoClient}
-          targetSuffix={targetSuffix}
-          fontFamily={fontFamily}
-        />
+        <StenoHintOverlay hint={hint} targetSuffix={targetSuffix} fontFamily={fontFamily} />
       )}
 
       <div
@@ -231,7 +244,9 @@ export function TypingActiveZone({
         }}
       />
 
-      {showKeyboardHud && <KeyboardHud inputMode={inputMode} pressed={pressedKeys} />}
+      {showKeyboardHud && (
+        <KeyboardHud inputMode={inputMode} pressed={pressedKeys} hintCodes={hintCodes} />
+      )}
     </div>
   );
 }

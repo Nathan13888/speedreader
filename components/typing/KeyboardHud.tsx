@@ -94,6 +94,9 @@ const ROWS: readonly KeyDef[][] = [
 interface KeyboardHudProps {
   inputMode: TypingInputMode;
   pressed: ReadonlySet<string>;
+  /** QWERTY codes that the active steno chord hint resolves to. Drives the
+   *  outlined "press these" highlight in steno mode. */
+  hintCodes?: ReadonlySet<string>;
 }
 
 /**
@@ -101,9 +104,10 @@ interface KeyboardHudProps {
  * letters. In steno mode it overlays Plover paddle labels (`S-`, `T-`, `*`,
  * `A-`, `-E`, …) on the mapped keys, leaving non-mapped keys with their
  * QWERTY labels so the user keeps physical-layout orientation. Pressed
- * `KeyboardEvent.code`s are filled with the accent color in both modes.
+ * `KeyboardEvent.code`s are filled with the accent color in both modes; the
+ * hint chord is outlined so the user can see where to press next.
  */
-export function KeyboardHud({ inputMode, pressed }: KeyboardHudProps) {
+export function KeyboardHud({ inputMode, pressed, hintCodes }: KeyboardHudProps) {
   const isSteno = inputMode === "steno";
 
   return (
@@ -117,9 +121,11 @@ export function KeyboardHud({ inputMode, pressed }: KeyboardHudProps) {
               const stenoLabel = stenoKeys.length > 0 ? stenoKeys.join(" ") : null;
               const isPressed = pressed.has(k.code);
               const isStenoMapped = stenoKeys.length > 0;
+              const isHinted = isSteno && hintCodes?.has(k.code) === true;
               const cls = [
                 styles.key,
                 k.muted ? styles.keyMuted : "",
+                isHinted ? styles.keyHint : "",
                 isPressed ? styles.keyPressed : "",
                 isSteno && isStenoMapped ? styles.keyStenoMapped : "",
               ]

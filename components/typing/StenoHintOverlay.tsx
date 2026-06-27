@@ -1,52 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { DictionaryWorkerClient, HintLookup } from "../../lib/typing/steno/workerClient";
+import type { HintLookup } from "../../lib/typing/steno/workerClient";
 import styles from "./StenoHintOverlay.module.css";
 
 interface StenoHintOverlayProps {
-  client: DictionaryWorkerClient | null;
-  /** Upcoming substring of the target, starting at the caret. */
+  hint: HintLookup | null;
+  /** Upcoming substring of the target, starting at the caret. Used to render
+   *  the matched prefix beneath the outline. */
   targetSuffix: string;
   fontFamily: string;
 }
 
 /**
  * Renders the chord that types the longest matchable prefix of the upcoming
- * target. When no forward match exists, renders the `*` undo chord.
- *
- * The lookup hits the dictionary worker only when `targetSuffix` changes; the
- * worker memoises nothing of its own — caller dedupes via React's render
- * cycle (parent only repaints us when the caret moves).
+ * target. When no forward match exists, renders the `*` undo chord. Hint
+ * resolution lives in the parent's `useStenoHint` so the keyboard overlay can
+ * share the same lookup.
  */
-export function StenoHintOverlay({ client, targetSuffix, fontFamily }: StenoHintOverlayProps) {
-  const [hint, setHint] = useState<HintLookup | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    if (!client || targetSuffix.length === 0) {
-      setHint(null);
-      return;
-    }
-    const slice = targetSuffix.slice(0, 32);
-    void client
-      .hint(slice)
-      .then((res) => {
-        if (!cancelled) setHint(res);
-      })
-      .catch(() => {
-        if (!cancelled) setHint(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [client, targetSuffix]);
-
-  if (!hint) {
-    return <div className={styles.placeholder} aria-hidden="true" />;
-  }
-
-  if (hint.kind === "none") {
+export function StenoHintOverlay({ hint, targetSuffix, fontFamily }: StenoHintOverlayProps) {
+  if (!hint || hint.kind === "none") {
     return <div className={styles.placeholder} aria-hidden="true" />;
   }
 
