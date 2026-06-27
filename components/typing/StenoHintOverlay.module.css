@@ -6,7 +6,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  gap: 6px;
   padding: 6px 10px;
   border: 1px dashed var(--border);
   border-radius: var(--radius);
@@ -14,6 +14,30 @@
   font-size: 13px;
   min-height: 44px;
   width: fit-content;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  opacity: 0.55;
+}
+
+.rowPrimary {
+  opacity: 1;
+}
+
+.step {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.sep {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  margin: 0 2px;
 }
 
 .outline {

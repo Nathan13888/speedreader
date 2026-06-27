@@ -54,11 +54,28 @@ function handleHint(targetSuffix: string): WorkerResponse {
   if (targetSuffix.length === 0) {
     return { id: 0, kind: "hint", none: true };
   }
+  // Decompose only the current word — stop at the first whitespace so we
+  // don't explode the search across multi-word lookahead.
+  const spaceAt = targetSuffix.search(/\s/);
+  const word = spaceAt === -1 ? targetSuffix : targetSuffix.slice(0, spaceAt);
+  if (word.length === 0) {
+    return { id: 0, kind: "hint", none: true };
+  }
+  const decompositions = reverseIndex.decompose(word);
+  if (decompositions.length > 0) {
+    return { id: 0, kind: "hint", decompositions };
+  }
+  // Fallback: no full cover of the word. Surface the longest-prefix match
+  // so the user still gets a hint to type the next chunk.
   const match = reverseIndex.match(targetSuffix);
   if (!match) {
     return { id: 0, kind: "hint", undo: true };
   }
-  return { id: 0, kind: "hint", outline: match.outline, consumed: match.consumed };
+  return {
+    id: 0,
+    kind: "hint",
+    decompositions: [{ chords: [{ outline: match.outline, consumed: match.consumed }] }],
+  };
 }
 
 self.addEventListener("message", (e: MessageEvent<WorkerRequest>) => {

@@ -68,8 +68,12 @@ export function TypingActiveZone({
       return codes;
     }
     if (hint.kind === "hit") {
-      for (const key of decodeOutline(hint.outline)) {
-        for (const code of qwertyCodesForStenoKey(key)) codes.add(code);
+      // Highlight the first chord of the longest-leading decomposition.
+      const topOutline = hint.decompositions[0]?.chords[0]?.outline;
+      if (topOutline) {
+        for (const key of decodeOutline(topOutline)) {
+          for (const code of qwertyCodesForStenoKey(key)) codes.add(code);
+        }
       }
     }
     return codes;

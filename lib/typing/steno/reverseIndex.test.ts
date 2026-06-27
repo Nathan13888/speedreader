@@ -53,3 +53,67 @@ describe("reverseIndex", () => {
     expect(idx.match("anything")).toBeNull();
   });
 });
+
+describe("reverseIndex.decompose", () => {
+  it("returns empty when nothing matches", () => {
+    const idx = buildReverseIndex([{ outline: "KAT", text: "cat" }]);
+    expect(idx.decompose("dog")).toEqual([]);
+  });
+
+  it("returns the single full-cover decomposition", () => {
+    const idx = buildReverseIndex([{ outline: "KAT", text: "cat" }]);
+    expect(idx.decompose("cat")).toEqual([{ chords: [{ outline: "KAT", consumed: 3 }] }]);
+  });
+
+  it("enumerates multiple decompositions, longest first chord leading", () => {
+    const idx = buildReverseIndex([
+      { outline: "STPAOERD", text: "speedread" },
+      { outline: "STPAOE", text: "speed" },
+      { outline: "RAOED", text: "read" },
+    ]);
+    const decomps = idx.decompose("speedread");
+    expect(decomps).toEqual([
+      { chords: [{ outline: "STPAOERD", consumed: 9 }] },
+      {
+        chords: [
+          { outline: "STPAOE", consumed: 5 },
+          { outline: "RAOED", consumed: 4 },
+        ],
+      },
+    ]);
+  });
+
+  it("returns empty when no full cover exists even with partial matches", () => {
+    const idx = buildReverseIndex([{ outline: "STPAOE", text: "speed" }]);
+    expect(idx.decompose("speedread")).toEqual([]);
+  });
+
+  it("orders by first-chord consumed desc, then chord count asc", () => {
+    const idx = buildReverseIndex([
+      { outline: "AB", text: "ab" },
+      { outline: "A-", text: "a" },
+      { outline: "PW-", text: "b" },
+      { outline: "KR-", text: "c" },
+      { outline: "PWKR", text: "bc" },
+    ]);
+    const decomps = idx.decompose("abc");
+    // "ab" (2) + "c" (1) leads since first chord consumes 2.
+    // "a" (1) + "bc" (2) is next (first chord = 1, chords = 2)
+    // "a" (1) + "b" (1) + "c" (1) is last (first chord = 1, chords = 3)
+    expect(decomps.map((d) => d.chords.map((c) => c.consumed))).toEqual([
+      [2, 1],
+      [1, 2],
+      [1, 1, 1],
+    ]);
+  });
+
+  it("caps the number of returned decompositions", () => {
+    const idx = buildReverseIndex([
+      { outline: "A-", text: "a" },
+      { outline: "PW-", text: "b" },
+      { outline: "AB", text: "ab" },
+    ]);
+    // "aabb" has multiple decompositions; cap at 1 should return 1.
+    expect(idx.decompose("aabb", 1)).toHaveLength(1);
+  });
+});

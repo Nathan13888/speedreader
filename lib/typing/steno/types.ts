@@ -60,21 +60,21 @@ export type WorkerRequest =
   | { id: number; kind: "translate"; outline: string }
   | { id: number; kind: "hint"; targetSuffix: string };
 
+export interface ChordStepMsg {
+  outline: string;
+  consumed: number;
+}
+
+export interface DecompositionMsg {
+  chords: ChordStepMsg[];
+}
+
 export type WorkerResponse =
   | { id: number; kind: "ready"; theoryId: string; entries: number }
   | { id: number; kind: "translation"; outline: string; text: string }
   | { id: number; kind: "translation"; outline: string; undo: true }
   | { id: number; kind: "translation"; outline: string; unknown: true }
-  | { id: number; kind: "hint"; outline: string; consumed: number }
+  | { id: number; kind: "hint"; decompositions: DecompositionMsg[] }
   | { id: number; kind: "hint"; undo: true }
   | { id: number; kind: "hint"; none: true }
   | { id: number; kind: "error"; message: string };
-
-export interface HintResult {
-  outline: string;
-  consumed: number;
-}
-
-export interface UndoHint {
-  undo: true;
-}

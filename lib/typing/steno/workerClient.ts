@@ -20,10 +20,19 @@ export interface TranslationUnknown {
 }
 export type TranslationResult = TranslationOk | TranslationUndo | TranslationUnknown;
 
-export interface HintHit {
-  kind: "hit";
+export interface HintChord {
   outline: string;
   consumed: number;
+}
+export interface HintDecomposition {
+  chords: HintChord[];
+}
+export interface HintHit {
+  kind: "hit";
+  /** Sorted by first-chord consumed length desc. Each decomposition is a
+   *  chord sequence covering the upcoming word; when no full cover exists
+   *  the worker falls back to a single partial-cover entry. */
+  decompositions: HintDecomposition[];
 }
 export interface HintUndo {
   kind: "undo";
@@ -100,8 +109,8 @@ export class DictionaryWorkerClient {
     if (res.kind === "hint") {
       if ("undo" in res && res.undo) return { kind: "undo" };
       if ("none" in res && res.none) return { kind: "none" };
-      if ("outline" in res && "consumed" in res) {
-        return { kind: "hit", outline: res.outline, consumed: res.consumed };
+      if ("decompositions" in res) {
+        return { kind: "hit", decompositions: res.decompositions };
       }
     }
     if (res.kind === "error") throw new Error(res.message);
