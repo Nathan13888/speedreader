@@ -1,32 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { IngestionZone } from "../components/ingestion/IngestionZone";
-import { ReaderZone } from "../components/reader/ReaderZone";
-import { FontDropdown } from "../components/shared/FontDropdown";
+import { DisciplineSwitcher } from "../components/discipline/DisciplineSwitcher";
+import { ReadingApp } from "../components/reading/ReadingApp";
+import { TypingApp } from "../components/typing/TypingApp";
 import { DEFAULT_FONT_ID } from "../lib/fonts";
-import { loadFont, loadSession, saveFont } from "../lib/session";
+import { loadDiscipline, loadFont, saveDiscipline, saveFont } from "../lib/session";
+import type { Discipline } from "../lib/typing/types";
 import styles from "./page.module.css";
 
-type ResumePromptState = "pending" | "dismissed";
-
 export default function Home() {
-  const [text, setText] = useState<string | null>(null);
-  const [startIndex, setStartIndex] = useState(0);
-  const [resumePrompt, setResumePrompt] = useState<ResumePromptState>("dismissed");
-  const [savedSession, setSavedSession] = useState<{
-    text: string;
-    index: number;
-    wpm: number;
-  } | null>(null);
-  const [fontId, setFontId] = useState<string>(() => loadFont() ?? DEFAULT_FONT_ID);
+  const [discipline, setDiscipline] = useState<Discipline>("read");
+  const [fontId, setFontId] = useState<string>(DEFAULT_FONT_ID);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    const session = loadSession();
-    if (session && session.text.length > 0) {
-      setSavedSession(session);
-      setResumePrompt("pending");
-    }
+    const savedDiscipline = loadDiscipline();
+    if (savedDiscipline) setDiscipline(savedDiscipline);
+    const savedFont = loadFont();
+    if (savedFont) setFontId(savedFont);
+    setHydrated(true);
   }, []);
 
   function handleFontChange(id: string) {
@@ -34,61 +27,23 @@ export default function Home() {
     setFontId(id);
   }
 
-  function handleResume() {
-    if (!savedSession) return;
-    setStartIndex(savedSession.index);
-    setText(savedSession.text);
-    setResumePrompt("dismissed");
-  }
-
-  function handleDiscard() {
-    setSavedSession(null);
-    setResumePrompt("dismissed");
-  }
-
-  function handleStart(cleanedText: string) {
-    setStartIndex(0);
-    setText(cleanedText);
-  }
-
-  function handleClose() {
-    setText(null);
-    setStartIndex(0);
+  function handleDisciplineChange(next: Discipline) {
+    setDiscipline(next);
+    saveDiscipline(next);
   }
 
   return (
     <main className={styles.main}>
-      {resumePrompt === "pending" && savedSession && (
-        <div className={styles.resumeBanner}>
-          <span>Resume your previous session? ({savedSession.text.split(" ").length} words)</span>
-          <div className={styles.resumeActions}>
-            <button type="button" className={styles.resumeBtn} onClick={handleResume}>
-              Resume
-            </button>
-            <button type="button" className={styles.discardBtn} onClick={handleDiscard}>
-              Discard
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className={`${styles.zone} ${text !== null ? styles.hidden : ""}`}>
-        <div className={styles.floatingFont}>
-          <FontDropdown currentFontId={fontId} onFontChange={handleFontChange} position="below" />
-        </div>
-        <IngestionZone onStart={handleStart} />
+      <div className={styles.topChrome}>
+        <DisciplineSwitcher active={discipline} onChange={handleDisciplineChange} />
       </div>
 
-      <div className={`${styles.zone} ${text === null ? styles.hidden : ""}`}>
-        {text !== null && (
-          <ReaderZone
-            text={text}
-            startIndex={startIndex}
-            onClose={handleClose}
-            fontId={fontId}
-            onFontChange={handleFontChange}
-          />
-        )}
+      <div className={`${styles.disc} ${discipline === "read" ? "" : styles.discHidden}`}>
+        <ReadingApp fontId={fontId} onFontChange={handleFontChange} />
+      </div>
+
+      <div className={`${styles.disc} ${discipline === "type" ? "" : styles.discHidden}`}>
+        {hydrated && <TypingApp fontId={fontId} onFontChange={handleFontChange} />}
       </div>
     </main>
   );

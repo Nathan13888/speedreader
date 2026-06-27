@@ -5,68 +5,27 @@
   position: relative;
 }
 
-.zone {
+.topChrome {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+}
+
+.disc {
   flex: 1;
   display: flex;
   flex-direction: column;
-  position: relative;
-  transition: opacity 0.2s ease;
+  min-height: 100vh;
 }
 
-.hidden {
+.discHidden {
   display: none;
 }
 
-.resumeBanner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 20px;
-  background: var(--accent-dim);
-  border-bottom: 1px solid var(--accent);
-  font-size: 14px;
-  flex-wrap: wrap;
-}
-
-.resumeActions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.resumeBtn {
-  padding: 6px 16px;
-  background: var(--accent);
-  color: #000;
-  font-weight: 600;
-  border-radius: var(--radius);
-  font-size: 13px;
-  min-height: 36px;
-}
-
-.resumeBtn:hover {
-  opacity: 0.9;
-}
-
-.discardBtn {
-  padding: 6px 16px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  font-size: 13px;
-  color: var(--text-muted);
-  min-height: 36px;
-}
-
-.discardBtn:hover {
-  border-color: var(--text-muted);
-  color: var(--text);
-}
-
-.floatingFont {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 50;
+@media (max-width: 480px) {
+  .topChrome {
+    top: 12px;
+  }
 }
