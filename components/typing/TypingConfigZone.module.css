@@ -143,6 +143,74 @@
   opacity: 0.88;
 }
 
+.startBtn:disabled,
+.startBtn[aria-disabled="true"] {
+  background: var(--surface-2);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.theoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.theoryBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  text-align: left;
+}
+
+.theoryBtn:hover:not(:disabled) {
+  border-color: var(--text-muted);
+}
+
+.theoryBtnActive {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+
+.theoryBtnDisabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.theoryName {
+  font-weight: 500;
+}
+
+.theoryMeta {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.dictStatus {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: right;
+  min-height: 16px;
+}
+
+.dictReady {
+  color: var(--accent);
+}
+
+.dictError {
+  color: var(--danger);
+}
+
 .hint {
   font-size: 12px;
   color: var(--text-muted);

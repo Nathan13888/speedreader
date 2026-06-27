@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { RenderedWord } from "../../lib/typing/charState";
+import type { DictionaryWorkerClient } from "../../lib/typing/steno/workerClient";
 import type { CaretStyle } from "../../lib/typing/types";
+import { StenoHintOverlay } from "./StenoHintOverlay";
 import styles from "./TypingActiveZone.module.css";
 
 interface TypingActiveZoneProps {
@@ -15,6 +17,11 @@ interface TypingActiveZoneProps {
   caretStyle: CaretStyle;
   onKey: (event: KeyboardEvent) => void;
   onBail: () => void;
+  /** When true, key capture is owned by the steno hook upstream. */
+  stenoActive: boolean;
+  stenoClient: DictionaryWorkerClient | null;
+  showHints: boolean;
+  targetSuffix: string;
 }
 
 const CARET_STYLE_CLASS: Record<CaretStyle, string> = {
@@ -38,6 +45,10 @@ export function TypingActiveZone({
   caretStyle,
   onKey,
   onBail,
+  stenoActive,
+  stenoClient,
+  showHints,
+  targetSuffix,
 }: TypingActiveZoneProps) {
   const hiddenInputRef = useRef<HTMLInputElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -65,13 +76,15 @@ export function TypingActiveZone({
         onBail();
         return;
       }
+      // When steno is active the upstream hook owns key forwarding
+      if (stenoActive) return;
       const target = e.target as HTMLElement | null;
       if (target === hiddenInputRef.current) return;
       onKey(e);
     }
     window.addEventListener("keydown", onWindowKey);
     return () => window.removeEventListener("keydown", onWindowKey);
-  }, [onKey, onBail]);
+  }, [onKey, onBail, stenoActive]);
 
   // Position caret + scroll track so the active line stays on the middle row.
   // biome-ignore lint/correctness/useExhaustiveDependencies: rendered/currentWord trigger DOM mutations the effect must observe
@@ -133,6 +146,14 @@ export function TypingActiveZone({
         </button>
       </div>
 
+      {showHints && (
+        <StenoHintOverlay
+          client={stenoClient}
+          targetSuffix={targetSuffix}
+          fontFamily={fontFamily}
+        />
+      )}
+
       <div
         ref={viewportRef}
         className={`${styles.viewport} ${focused ? "" : styles.viewportBlurred}`}
@@ -193,6 +214,8 @@ export function TypingActiveZone({
             onBail();
             return;
           }
+          // Steno hook owns the key stream when active
+          if (stenoActive) return;
           onKey(e.nativeEvent);
         }}
         value=""

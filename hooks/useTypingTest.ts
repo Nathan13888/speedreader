@@ -231,6 +231,7 @@ export function useTypingTest(initialConfig: TypingConfig): TypingTestState & Ty
       duration: configRef.current.duration,
       timestamp: Date.now(),
       config: configRef.current,
+      inputMode: configRef.current.inputMode,
     };
     appendTypingHistory(result);
   }, [status, targetWords, typedWords, currentWord, durationMs]);

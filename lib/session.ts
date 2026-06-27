@@ -1,11 +1,16 @@
 import {
   CARET_STYLES,
   type CaretStyle,
+  DEFAULT_DISPLAY_CHORDS,
+  DEFAULT_INPUT_MODE,
+  DEFAULT_STENO_THEORY,
   DEFAULT_TYPING_CONFIG,
   type Discipline,
   TYPING_DURATIONS,
   TYPING_HISTORY_LIMIT,
+  TYPING_INPUT_MODES,
   type TypingConfig,
+  type TypingInputMode,
   type TypingResult,
 } from "./typing/types";
 
@@ -14,6 +19,9 @@ const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const DISCIPLINE_KEY = "speedreader_discipline";
 const TYPING_CONFIG_KEY = "speedreader_typing_config";
 const TYPING_HISTORY_KEY = "speedreader_typing_history";
+const TYPING_INPUT_MODE_KEY = "speedreader_typing_input_mode";
+const TYPING_THEORY_KEY = "speedreader_typing_theory";
+const TYPING_DISPLAY_CHORDS_KEY = "speedreader_typing_display_chords";
 
 export interface SessionSnapshot {
   text: string;
@@ -106,7 +114,9 @@ export function saveDiscipline(discipline: Discipline): void {
   }
 }
 
-function isValidBaseConfig(value: unknown): value is Omit<TypingConfig, "caretStyle"> {
+function isValidBaseConfig(
+  value: unknown,
+): value is Omit<TypingConfig, "caretStyle" | "inputMode" | "theory" | "displayChords"> {
   if (!value || typeof value !== "object") return false;
   const c = value as Record<string, unknown>;
   return (
@@ -128,7 +138,24 @@ export function loadTypingConfig(): TypingConfig | null {
     const caretStyle = CARET_STYLES.includes(maybe.caretStyle as CaretStyle)
       ? (maybe.caretStyle as CaretStyle)
       : DEFAULT_TYPING_CONFIG.caretStyle;
-    return { ...(parsed as Omit<TypingConfig, "caretStyle">), caretStyle };
+    const inputMode = TYPING_INPUT_MODES.includes(maybe.inputMode as TypingInputMode)
+      ? (maybe.inputMode as TypingInputMode)
+      : DEFAULT_TYPING_CONFIG.inputMode;
+    const theory =
+      typeof maybe.theory === "string" && maybe.theory.length > 0
+        ? maybe.theory
+        : DEFAULT_TYPING_CONFIG.theory;
+    const displayChords =
+      typeof maybe.displayChords === "boolean"
+        ? maybe.displayChords
+        : DEFAULT_TYPING_CONFIG.displayChords;
+    return {
+      ...(parsed as Omit<TypingConfig, "caretStyle" | "inputMode" | "theory" | "displayChords">),
+      caretStyle,
+      inputMode,
+      theory,
+      displayChords,
+    };
   } catch {
     return null;
   }
@@ -166,6 +193,61 @@ export function appendTypingHistory(result: TypingResult): void {
 export function clearTypingHistory(): void {
   try {
     localStorage.removeItem(TYPING_HISTORY_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+export function loadInputMode(): TypingInputMode {
+  try {
+    const raw = localStorage.getItem(TYPING_INPUT_MODE_KEY);
+    if (raw === "qwerty" || raw === "steno") return raw;
+    return DEFAULT_INPUT_MODE;
+  } catch {
+    return DEFAULT_INPUT_MODE;
+  }
+}
+
+export function saveInputMode(mode: TypingInputMode): void {
+  try {
+    localStorage.setItem(TYPING_INPUT_MODE_KEY, mode);
+  } catch {
+    // ignore
+  }
+}
+
+export function loadStenoTheory(): string {
+  try {
+    const raw = localStorage.getItem(TYPING_THEORY_KEY);
+    if (raw && raw.length > 0) return raw;
+    return DEFAULT_STENO_THEORY;
+  } catch {
+    return DEFAULT_STENO_THEORY;
+  }
+}
+
+export function saveStenoTheory(theoryId: string): void {
+  try {
+    localStorage.setItem(TYPING_THEORY_KEY, theoryId);
+  } catch {
+    // ignore
+  }
+}
+
+export function loadDisplayChords(): boolean {
+  try {
+    const raw = localStorage.getItem(TYPING_DISPLAY_CHORDS_KEY);
+    if (raw === "true") return true;
+    if (raw === "false") return false;
+    return DEFAULT_DISPLAY_CHORDS;
+  } catch {
+    return DEFAULT_DISPLAY_CHORDS;
+  }
+}
+
+export function saveDisplayChords(value: boolean): void {
+  try {
+    localStorage.setItem(TYPING_DISPLAY_CHORDS_KEY, String(value));
   } catch {
     // ignore
   }

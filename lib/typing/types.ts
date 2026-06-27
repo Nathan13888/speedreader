@@ -19,12 +19,25 @@ export const CARET_STYLE_LABEL: Record<CaretStyle, string> = {
   fluid: "Fluid",
 };
 
+export type TypingInputMode = "qwerty" | "steno";
+
+export const TYPING_INPUT_MODES: readonly TypingInputMode[] = ["qwerty", "steno"] as const;
+
+export const DEFAULT_INPUT_MODE: TypingInputMode = "qwerty";
+
+export const DEFAULT_STENO_THEORY = "plover";
+
+export const DEFAULT_DISPLAY_CHORDS = true;
+
 export interface TypingConfig {
   duration: TypingDuration;
   punctuation: boolean;
   numbers: boolean;
   wordListId: string;
   caretStyle: CaretStyle;
+  inputMode: TypingInputMode;
+  theory: string;
+  displayChords: boolean;
 }
 
 export const DEFAULT_TYPING_CONFIG: TypingConfig = {
@@ -33,6 +46,9 @@ export const DEFAULT_TYPING_CONFIG: TypingConfig = {
   numbers: false,
   wordListId: DEFAULT_WORD_LIST_ID,
   caretStyle: "smooth",
+  inputMode: DEFAULT_INPUT_MODE,
+  theory: DEFAULT_STENO_THEORY,
+  displayChords: DEFAULT_DISPLAY_CHORDS,
 };
 
 export interface TypingMetrics {
@@ -49,6 +65,7 @@ export interface TypingResult extends TypingMetrics {
   duration: TypingDuration;
   timestamp: number;
   config: TypingConfig;
+  inputMode?: TypingInputMode;
 }
 
 export const TYPING_HISTORY_LIMIT = 25;

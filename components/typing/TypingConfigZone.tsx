@@ -1,12 +1,15 @@
 "use client";
 
+import { STENO_THEORIES } from "../../lib/typing/steno/types";
 import {
   CARET_STYLE_LABEL,
   CARET_STYLES,
   type CaretStyle,
   TYPING_DURATIONS,
+  TYPING_INPUT_MODES,
   type TypingConfig,
   type TypingDuration,
+  type TypingInputMode,
 } from "../../lib/typing/types";
 import { FontDropdown } from "../shared/FontDropdown";
 import styles from "./TypingConfigZone.module.css";
@@ -17,7 +20,16 @@ interface TypingConfigZoneProps {
   fontId: string;
   onFontChange: (id: string) => void;
   onStart: () => void;
+  /** Steno-only — dictionary load status to gate the Start button. */
+  dictReady: boolean;
+  dictLoading: boolean;
+  dictError: string | null;
 }
+
+const INPUT_MODE_LABEL: Record<TypingInputMode, string> = {
+  qwerty: "QWERTY",
+  steno: "Steno",
+};
 
 export function TypingConfigZone({
   config,
@@ -25,10 +37,16 @@ export function TypingConfigZone({
   fontId,
   onFontChange,
   onStart,
+  dictReady,
+  dictLoading,
+  dictError,
 }: TypingConfigZoneProps) {
   function patch(partial: Partial<TypingConfig>) {
     onConfigChange({ ...config, ...partial });
   }
+
+  const isSteno = config.inputMode === "steno";
+  const startDisabled = isSteno && !dictReady;
 
   return (
     <div className={styles.container}>
@@ -95,16 +113,88 @@ export function TypingConfigZone({
         </div>
 
         <div className={styles.row}>
+          <span className={styles.label}>Input mode</span>
+          <div className={styles.segmented}>
+            {TYPING_INPUT_MODES.map((m) => (
+              <button
+                key={m}
+                type="button"
+                aria-pressed={config.inputMode === m}
+                className={`${styles.segBtn} ${config.inputMode === m ? styles.segBtnActive : ""}`}
+                onClick={() => patch({ inputMode: m })}
+              >
+                {INPUT_MODE_LABEL[m]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {isSteno && (
+          <>
+            <div className={styles.row}>
+              <span className={styles.label}>Theory</span>
+              <div className={styles.theoryList}>
+                {STENO_THEORIES.map((t) => {
+                  const selected = config.theory === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      aria-pressed={selected}
+                      disabled={!t.enabled}
+                      title={t.disabledReason ?? t.label}
+                      className={`${styles.theoryBtn} ${selected ? styles.theoryBtnActive : ""} ${
+                        t.enabled ? "" : styles.theoryBtnDisabled
+                      }`}
+                      onClick={() => t.enabled && patch({ theory: t.id })}
+                    >
+                      <span className={styles.theoryName}>{t.label}</span>
+                      <span className={styles.theoryMeta}>
+                        {t.enabled ? t.license : "coming soon"}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className={styles.row}>
+              <span className={styles.label}>Display chords</span>
+              <Toggle
+                on={config.displayChords}
+                onChange={(on) => patch({ displayChords: on })}
+                label="Display chord hints"
+              />
+            </div>
+
+            <div className={styles.dictStatus} role="status" aria-live="polite">
+              {dictError && <span className={styles.dictError}>{dictError}</span>}
+              {!dictError && dictLoading && <span>Loading dictionary…</span>}
+              {!dictError && !dictLoading && dictReady && (
+                <span className={styles.dictReady}>Dictionary ready</span>
+              )}
+            </div>
+          </>
+        )}
+
+        <div className={styles.row}>
           <span className={styles.label}>Font</span>
           <FontDropdown currentFontId={fontId} onFontChange={onFontChange} position="below" />
         </div>
 
-        <button type="button" className={styles.startBtn} onClick={onStart}>
-          Start typing
+        <button
+          type="button"
+          className={styles.startBtn}
+          onClick={onStart}
+          disabled={startDisabled}
+          aria-disabled={startDisabled}
+        >
+          {startDisabled ? "Loading dictionary…" : "Start typing"}
         </button>
 
         <div className={styles.hint}>
-          First keystroke starts the timer. Press <kbd>Esc</kbd> any time to cancel.
+          First {isSteno ? "stroke" : "keystroke"} starts the timer. Press <kbd>Esc</kbd> any time
+          to cancel.
         </div>
       </div>
     </div>
