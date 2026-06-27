@@ -27,8 +27,8 @@ sizing convention in `docs/mvp/MVP_SCOPE.md`.
 ### D1 — Discipline concept
 
 speedreader hosts two disciplines: **Read** and **Type**. The existing
-`ReadingMode` (`rsvp | paragraph`) becomes a child of Read. A future Steno
-discipline will be a sibling of Type, not a sub-mode.
+`ReadingMode` (`rsvp | paragraph`) becomes a child of Read. Steno is an
+**input mode of Type**, not a separate discipline — see D11 and `STENO.md`.
 
 **Why:** Avoids renaming the project, leaves the reader untouched, and gives
 a clean architectural seam for additional practice surfaces.
@@ -138,14 +138,97 @@ existing session/resume behavior is untouched.
 **Why:** Prevents "swiss-army" abstractions. Reading and typing share
 primitives but do not share state machines.
 
-### D10 — Steno: roadmap-only
+### D10 — Steno scope split
 
-This spike captures the **intent** for simulated steno; it does not commit
-to an implementation. See `STENO.md`.
+Steno support is **out of Typing v0.1**, but committed for a later v0.x
+milestone as a Type input mode. See D11–D17 below and `STENO.md` for the
+full design.
 
-**Why:** Out of MVP scope, but capturing the intent prevents Type from being
-architected in a way that boxes steno out (e.g., assuming
-one-keystroke-per-character forever).
+**Why:** v0.1 ships without steno to keep the MVP small. Committing the
+design now (rather than leaving it open) lets v0.1 avoid encoding
+assumptions that would block steno later (e.g., one-keystroke-per-character
+in `useTypingTest`).
+
+### D11 — Steno is a Type input mode, not a sibling discipline
+
+The Type discipline gains an `inputMode: "qwerty" | "steno"` selector. In
+`steno` mode, chord capture and dictionary lookup translate into a
+character stream that feeds the same `useTypingTest` state machine. The
+top-level discipline switcher remains two-segment (Read | Type).
+
+**Why:** A shared state machine keeps scoring, results, and persistence
+unified across input modes, and lets users switch mid-session without
+leaving the test. The trade is one extra translation layer; in exchange we
+do not fork the typing hook or duplicate the results UI.
+
+### D12 — Theory selector; Plover-only in first steno milestone
+
+When `inputMode === "steno"`, the Type config screen exposes a `theory`
+selector. v0.x enables exactly one option: **Plover Main (CC0)**. Phoenix,
+StenEd, and Magnum appear as disabled "coming soon" entries.
+
+**Why:** Plover Main is openly licensed (CC0). Phoenix, StenEd, and Magnum
+dictionaries are copyrighted by their respective authors and cannot be
+redistributed without per-theory licensing work — deferred. BYO dictionary
+upload is also deferred.
+
+### D13 — Dictionary loading: on-demand + IndexedDB cache
+
+Steno dictionaries are fetched on first selection of a theory, parsed in a
+Web Worker, and cached in IndexedDB keyed by dictionary id + version.
+Subsequent sessions hit the cache without a network round-trip.
+
+**Why:** Plover Main is ~150k entries (~3 MB JSON); bundling it would
+balloon the initial JS payload. This is a narrow exception to the "bundled
+JSON only" rule from `OVERVIEW.md` and `ROADMAP.md`, scoped to steno
+dictionaries only. A future preprocessing pipeline (compact binary, filter
+pass) is acknowledged but deferred.
+
+### D14 — Hot-path state management
+
+The dictionary lives in a Web Worker. The main thread holds only: active
+input mode, theory id, the current chord buffer, the display-chords toggle,
+and the memoized hint for the current caret position. The worker exposes
+`load(theoryId)`, `translate(outline)`, and `hint(targetSuffix)`.
+
+**Why:** React renders stay small and predictable. The reverse-lookup
+index for hints never crosses the message boundary — only individual hint
+results do.
+
+### D15 — Chord capture: all-keys-up detection
+
+Default chord capture: track key-down events since the last all-keys-up
+state; submit the captured set as a chord on the next all-keys-up edge.
+Optional fallback time-window for non-NKRO keyboards is off by default and
+configurable.
+
+**Why:** Matches Plover's stenotype emulator. All-keys-up is unambiguous on
+NKRO keyboards. The time-window fallback exists for keyboards that drop
+key-up events under high simultaneity but is opt-in to avoid surprising
+chord submissions on capable hardware.
+
+### D16 — Display chords: on by default in steno mode
+
+When `inputMode === "steno"`, the chord hint overlay is on by default. The
+user may toggle it off; the toggle persists. The overlay renders the chord
+that produces the longest dictionary-matchable prefix of `target[caret..]`.
+When no prefix matches, the overlay renders the dictionary's `*` (undo)
+chord.
+
+**Why:** Steno learners need the hint to start. Defaulting on matches the
+user's stated intent; the toggle exists for experienced users who want a
+cleaner display.
+
+### D17 — Scoring parity with qwerty mode
+
+Steno mode uses the same WPM and accuracy formulas as qwerty mode (D7).
+Steno-native metrics (strokes per minute, `*`-cancels-prior-error) are
+deferred. `speedreader_typing_history` entries gain an optional
+`inputMode` field; entries without it are treated as `qwerty`.
+
+**Why:** Keeps the results screen, history shape, and persistence keys
+identical across input modes. Steno-specific metrics can be additive in a
+later milestone without breaking past results.
 
 ## Explicitly Out of Scope for Typing v0.1
 
@@ -154,7 +237,7 @@ one-keystroke-per-character forever).
 - Non-English word lists.
 - WPM-over-time chart, consistency score, personal bests UI.
 - Mid-test resume.
-- Steno discipline (any implementation).
+- Steno input mode (any implementation; ships in a later v0.x milestone).
 - New npm dependencies.
 
 ## Constraints (inherited)

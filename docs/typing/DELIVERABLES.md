@@ -36,6 +36,20 @@ progresses. Mirrors `docs/mvp/DELIVERABLES.md`.
 
 ---
 
+## Steno Features (v0.x — separate milestone, not part of v0.1)
+
+| # | Feature | Status | Test Coverage | Notes |
+|---|---|---|---|---|
+| S1 | Input-mode + theory selector (Type config) | [ ] | integration | Toggle qwerty/steno; theory selector visible only in steno; Plover-only enabled in v0.x. |
+| S2 | Plover dictionary loader | [ ] | unit | Fetch CC0 source, parse, IndexedDB cache keyed by id + version. |
+| S3 | Dictionary worker (forward + reverse indexes) | [ ] | unit | `load`, `translate`, `hint` message API; reverse index never serialized across boundary. |
+| S4 | QWERTY → steno layout + chord capture | [ ] | unit | Plover layout map; all-keys-up detection; optional time-window fallback. |
+| S5 | Steno → typing bridge | [ ] | unit | Chord translation → char events into `useTypingTest`; `*` chord → backspace events. |
+| S6 | Chord hint overlay | [ ] | integration | Longest matchable prefix → chord render; `*` chord render when no forward match. |
+| S7 | Steno persistence | [ ] | unit | `speedreader_typing_input_mode`, `speedreader_typing_theory`, `speedreader_typing_display_chords`; optional `inputMode` on history. |
+
+---
+
 ## Quality Gates
 
 All must pass before Typing v0.1 ships. Inherits the reader's gates from
@@ -73,3 +87,25 @@ All must pass before Typing v0.1 ships. Inherits the reader's gates from
 - [ ] No layout breakage at 375 px or 1440 px.
 - [ ] `bun run lint` reports zero errors on the full codebase.
 - [ ] All new unit and integration tests pass with `bun test`.
+
+---
+
+## Acceptance Criteria (Steno Input Mode — v0.x, separate milestone)
+
+- [ ] User can switch input mode between `qwerty` and `steno` from the Type
+      config without losing other config selections.
+- [ ] Selecting `steno` mode for the first time loads the Plover dictionary
+      in the background; subsequent sessions hit the IndexedDB cache.
+- [ ] A valid steno chord on the QWERTY layout produces the dictionary's
+      translation as input into the typing buffer.
+- [ ] The `*` chord acts as undo and removes the last translation via
+      synthesized backspace events.
+- [ ] Keys outside the steno layout (Backspace, Escape) bypass the chord
+      buffer and forward to `useTypingTest` directly.
+- [ ] When `steno` mode is active, the chord hint overlay is on by default
+      and shows the chord for the next matchable prefix.
+- [ ] When no forward chord matches the upcoming target, the overlay shows
+      the `*` (undo) chord.
+- [ ] WPM and accuracy are computed identically in qwerty and steno modes.
+- [ ] Switching back to `qwerty` mid-session does not destroy test state.
+- [ ] History entries from steno-mode sessions include `inputMode: "steno"`.

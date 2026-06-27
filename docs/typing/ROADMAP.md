@@ -49,15 +49,25 @@ users expect from monkeytype-style apps, without expanding scoring complexity.
 
 ---
 
-## Typing v0.x — Steno Discipline
+## Typing v0.x — Steno Input Mode
 
-**Goal:** Begin the simulated-steno discipline as a sibling of Type. See
-`STENO.md` for the open questions that gate this.
+**Goal:** Add a steno input mode to the Type discipline. Plover Main
+dictionary by default. QWERTY → steno layout translation for users without
+a native steno keyboard. Chord hint overlay on by default in steno mode.
+Scoring parity with qwerty mode. See `STENO.md` for the spec.
 
-Not a fixed version because it depends on decisions still open at the time
-of this spike (theory dictionary source, chord capture model, NKRO
-requirements). Steno will not be implemented under the Type discipline; it
-ships as its own discipline once those decisions are made.
+Ordering vs. v0.2 / v0.3 is TBD. Steno does not block earlier milestones,
+and earlier milestones do not block steno.
+
+| Feature | Description |
+|---|---|
+| Input-mode + theory selector | Adds `qwerty`/`steno` toggle to Type config; theory selector visible only in steno. |
+| Plover dictionary loader | Fetch + parse + IndexedDB cache for the Plover Main dictionary (CC0). |
+| Dictionary worker | Forward (outline → translation) and reverse (target prefix → outline) indexes in a Web Worker. |
+| Chord capture | All-keys-up detection over QWERTY → steno layout map. Optional time-window fallback. |
+| Steno-to-typing bridge | Feeds chord translations as character events into `useTypingTest`; `*` chord emits backspace events. |
+| Chord hint overlay | Renders next-stroke hint under upcoming target substring; renders `*` chord when no forward match exists. |
+| Steno persistence | `speedreader_typing_input_mode`, `speedreader_typing_theory`, `speedreader_typing_display_chords` keys; optional `inputMode` field on history entries. |
 
 ---
 
@@ -78,8 +88,10 @@ These extend the reading-side principles in `docs/mvp/ROADMAP.md`:
 
 1. **One discipline at a time.** Do not start work on a steno feature while
    Type v0.1 still has open deliverables.
-2. **No new dependencies.** Word lists, quote sets, and steno dictionaries
-   are JSON bundled with the app; no fetchers, no extractors.
+2. **No new npm dependencies.** Word lists and quote sets are JSON bundled
+   with the app. Steno dictionaries are the deliberate exception — fetched
+   on-demand and cached in IndexedDB (see `STENO.md` D13) — but no new
+   runtime libraries are added to the bundle for either case.
 3. **Reader stays first-class.** Typing changes must not regress the reader's
    keyboard handling, session persistence, or layout.
 4. **Stateless still wins.** No accounts, no sync. History is local-only.

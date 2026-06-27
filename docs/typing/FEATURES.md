@@ -219,18 +219,181 @@ Implements D9.
 
 ---
 
+---
+
+## Steno Input Mode Features (v0.x — separate milestone)
+
+The features below extend Type with a steno input mode. They form their own
+milestone and are **not** part of v0.1. Specs implement D11–D17 in
+`SCOPE.md`; the design rationale is in `STENO.md`.
+
+## S1. Input-Mode + Theory Selector `[S]`
+
+A two-segment control in the Type config screen: **QWERTY** | **Steno**.
+Default: `qwerty`. When `Steno` is selected, a second control appears
+below: **Theory**. v0.x enables exactly one option (**Plover Main (CC0)**);
+Phoenix, StenEd, and Magnum render disabled with a "coming soon" affordance.
+
+- Input mode persists to `speedreader_typing_input_mode`.
+- Theory persists to `speedreader_typing_theory`.
+- Selecting `Steno` triggers a background dictionary load (S2) if not
+  cached. The Start button is disabled until the dictionary reports ready.
+
+Implements D11, D12.
+
+---
+
+## S2. Plover Dictionary Loader `[S]`
+
+`lib/typing/steno/dictionaries/plover.ts`. Fetches Plover Main (CC0) from
+a configured static URL on first selection. Parses to
+`Record<outline, translation>`. Caches the parsed forward map in IndexedDB
+under `speedreader_steno_dict_plover_<version>`.
+
+- Subsequent sessions read from IndexedDB; no network call unless the
+  version key changes.
+- Load status (`idle | loading | ready | error`) is exposed to the UI for
+  a non-blocking "loading dictionary" affordance in the config screen.
+
+Implements D13.
+
+---
+
+## S3. Dictionary Worker `[M]`
+
+`lib/typing/steno/worker.ts`. A dedicated Web Worker holds the loaded
+dictionary plus both indexes. Message API:
+
+```ts
+type WorkerRequest =
+  | { kind: "load"; theoryId: string }
+  | { kind: "translate"; outline: string }
+  | { kind: "hint"; targetSuffix: string };
+
+type WorkerResult =
+  | { kind: "ready" }
+  | { kind: "translation"; outline: string; text: string }
+  | { kind: "translation"; outline: string; undo: true }
+  | { kind: "hint"; outline: string; consumed: number }
+  | { kind: "hint"; undo: true }
+  | { kind: "error"; message: string };
+```
+
+- Forward index: `Map<outline, translation>` built during `load`.
+- Reverse index: structure tuned for longest-prefix matching on
+  `targetSuffix` (e.g., a trie over translations). Built once per `load`
+  and **never serialized across the message boundary**.
+- The worker is idle between requests. Hints are recomputed only when the
+  caret moves; translations only when a chord is submitted.
+
+Implements D14.
+
+---
+
+## S4. QWERTY → Steno Layout + Chord Capture `[M]`
+
+`lib/typing/steno/layout.ts` defines the QWERTY → steno layout map (Plover
+convention). `hooks/useStenoInput.ts` runs the capture loop:
+
+- Listens to `keydown` / `keyup` on the test surface.
+- Tracks the set of steno-mapped keys pressed since the last all-keys-up
+  edge.
+- On `all-keys-up`, emits the captured set as an outline string and clears
+  the buffer.
+- Optional time-window fallback (off by default; surfaced as a hidden
+  config in v0.x) emits the buffer N ms after the first key-down regardless
+  of release state.
+- Keys outside the steno layout (Backspace, Escape, modifiers) bypass the
+  chord buffer entirely and forward to `useTypingTest`.
+
+Implements D15.
+
+---
+
+## S5. Steno-to-Typing Bridge `[S]`
+
+When `useStenoInput` emits an outline, the worker is queried for a
+translation. Result handling:
+
+- **Translation = string:** the bridge synthesizes one `KeyboardEvent` per
+  character of the translation and dispatches them through
+  `useTypingTest.handleKey`, in order.
+- **Translation = undo:** the bridge synthesizes N `Backspace` events,
+  where N is the character length of the last emitted translation. The
+  bridge tracks the last translation in a length-1 ring buffer; one entry
+  is enough for `*` semantics in v0.x.
+
+`useTypingTest` is unchanged. Scoring is identical across input modes (D17).
+
+Implements D11, D17.
+
+---
+
+## S6. Chord Hint Overlay `[M]`
+
+`components/typing/StenoHintOverlay.tsx`. Renders directly under (placement
+finalized in design pass) the upcoming substring of the target.
+
+Behavior:
+
+1. On caret move or test start, query the worker with `target[caret..]`
+   capped at 32 characters.
+2. Worker returns `{ outline, consumed }`. The overlay renders `outline`
+   over `target[caret..caret+consumed]` and underlines the substring for
+   emphasis.
+3. If the worker returns `{ undo: true }`, the overlay renders the
+   dictionary's `*` chord with a small caption indicating the user should
+   undo before continuing.
+4. The overlay rerenders only when the hint result changes — not on every
+   keystroke.
+
+Default visibility: on when `inputMode === "steno"`. Toggle persists to
+`speedreader_typing_display_chords`.
+
+Implements D16.
+
+---
+
+## S7. Steno Persistence `[S]`
+
+Extends `lib/session.ts`:
+
+```ts
+loadInputMode(): "qwerty" | "steno"
+saveInputMode(m: "qwerty" | "steno"): void
+
+loadStenoTheory(): string | null
+saveStenoTheory(theoryId: string): void
+
+loadDisplayChords(): boolean
+saveDisplayChords(v: boolean): void
+```
+
+History (`speedreader_typing_history`) entries gain an optional `inputMode`
+field. Existing entries without the field are treated as `qwerty` for
+backward compatibility on read.
+
+Implements D11 (mode persistence), D17 (history shape).
+
+---
+
 ## Files Touched (planned for implementation, not in this spike)
 
 - `app/page.tsx` — mount the discipline switcher.
 - `components/discipline/DisciplineSwitcher.tsx` — T1.
 - `components/typing/TypingApp.tsx` — top-level shell for the Type discipline.
-- `components/typing/TypingConfigZone.tsx` — T2.
+- `components/typing/TypingConfigZone.tsx` — T2 + S1 (input-mode + theory).
 - `components/typing/TypingActiveZone.tsx` — T6.
 - `components/typing/TypingResultsZone.tsx` — T7.
+- `components/typing/StenoHintOverlay.tsx` — S6.
 - `hooks/useTypingTest.ts` — T5.
+- `hooks/useStenoInput.ts` — S4.
 - `lib/typing/normalize.ts` — T4.
 - `lib/typing/wordBank.ts` — sampler over T3 list.
 - `lib/typing/words/english_1k.json` — T3.
-- `lib/session.ts` — extend with typing helpers (T8).
+- `lib/typing/steno/layout.ts` — S4 (QWERTY → steno map).
+- `lib/typing/steno/worker.ts` — S3 (worker; load + indexes + lookups).
+- `lib/typing/steno/dictionaries/plover.ts` — S2 (Plover loader + cache).
+- `lib/session.ts` — extend with typing helpers (T8) and steno helpers (S7).
 
 No files in `components/reader/` or `hooks/useRSVPPlayer.ts` change.

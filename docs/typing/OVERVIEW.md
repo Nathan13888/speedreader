@@ -31,9 +31,11 @@ speedreader now hosts **two disciplines** under one app:
 | **Read** (existing) | Ingest text → play | `rsvp`, `paragraph` |
 | **Type** (new) | Pick duration → type → see results | `time` (MVP) |
 
-A future **Steno** discipline will sit alongside Type, not under it — the
-input model (chords vs. single keystrokes) is too different to share a state
-machine. See `STENO.md`.
+The Type discipline will gain a **steno input mode** in a later v0.x
+milestone (Plover dictionary by default, QWERTY → steno layout translation,
+on-by-default chord hint overlay). Steno is an input mode of Type, not a
+separate discipline — the same state machine, scoring, and results serve
+both qwerty and steno input. See `STENO.md`.
 
 ## Top-Level UX
 
@@ -48,7 +50,10 @@ machine. See `STENO.md`.
 
 Inherits the project stack from `docs/mvp/OVERVIEW.md` (Next.js App Router,
 Bun, TypeScript strict, Biome, localStorage-only). The typing discipline adds
-no new runtime dependencies.
+no new npm dependencies. The steno input mode (later milestone) loads
+dictionary JSON on-demand and caches it in IndexedDB — a deliberate
+exception to the "bundled JSON only" norm, narrowly scoped to steno
+dictionaries (see `STENO.md` D13).
 
 ## Key Design Decisions
 
