@@ -85,6 +85,7 @@ export function TypingApp({ fontId, onFontChange }: TypingAppProps) {
           remainingMs={test.remainingMs}
           durationMs={test.durationMs}
           fontFamily={font.fontFamily}
+          caretStyle={hydratedConfig.caretStyle}
           onKey={test.handleKey}
           onBail={handleBail}
         />

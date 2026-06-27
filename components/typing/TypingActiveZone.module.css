@@ -7,6 +7,7 @@
   max-width: 900px;
   margin: 0 auto;
   padding: 32px 24px;
+  position: relative;
 }
 
 .timerRow {
@@ -55,12 +56,12 @@
   border-color: var(--text-muted);
 }
 
-.words {
+.viewport {
   position: relative;
   font-size: 28px;
   line-height: 1.6;
   letter-spacing: 0.01em;
-  max-height: calc(1.6em * 3);
+  height: calc(1.6em * 3);
   overflow: hidden;
   user-select: none;
   cursor: text;
@@ -68,7 +69,7 @@
 }
 
 @media (max-width: 480px) {
-  .words {
+  .viewport {
     font-size: 22px;
   }
   .container {
@@ -76,9 +77,15 @@
   }
 }
 
-.wordsBlurred {
+.viewportBlurred {
   filter: blur(3px);
   transition: filter 0.15s;
+}
+
+.track {
+  position: relative;
+  will-change: transform;
+  transition: transform 0.18s ease;
 }
 
 .word {
@@ -93,7 +100,6 @@
 .char {
   display: inline-block;
   color: var(--text-muted);
-  transition: color 0.05s;
 }
 
 .char-correct {
@@ -134,11 +140,31 @@
   width: 2px;
   background: var(--accent);
   border-radius: 1px;
-  transition:
-    transform 0.06s ease,
-    height 0.06s ease;
   animation: caretBlink 1s steps(2, end) infinite;
   pointer-events: none;
+  will-change: transform, height;
+}
+
+.caretOff {
+  transition: none;
+}
+
+.caretSnap {
+  transition:
+    transform 0.04s linear,
+    height 0.04s linear;
+}
+
+.caretSmooth {
+  transition:
+    transform 0.12s ease,
+    height 0.12s ease;
+}
+
+.caretFluid {
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes caretBlink {
@@ -163,7 +189,11 @@
   padding: 10px 16px;
   font-size: 13px;
   color: var(--text-muted);
-  pointer-events: none;
+  cursor: pointer;
+}
+
+.focusHint:hover {
+  color: var(--text);
 }
 
 .hiddenInput {

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { RenderedWord } from "../../lib/typing/charState";
+import type { CaretStyle } from "../../lib/typing/types";
 import styles from "./TypingActiveZone.module.css";
 
 interface TypingActiveZoneProps {
@@ -11,9 +12,17 @@ interface TypingActiveZoneProps {
   remainingMs: number;
   durationMs: number;
   fontFamily: string;
+  caretStyle: CaretStyle;
   onKey: (event: KeyboardEvent) => void;
   onBail: () => void;
 }
+
+const CARET_STYLE_CLASS: Record<CaretStyle, string> = {
+  off: styles.caretOff,
+  snap: styles.caretSnap,
+  smooth: styles.caretSmooth,
+  fluid: styles.caretFluid,
+};
 
 function CaretSpacer() {
   return <span aria-hidden="true" className={styles.caretSpacer} />;
@@ -26,11 +35,13 @@ export function TypingActiveZone({
   remainingMs,
   durationMs,
   fontFamily,
+  caretStyle,
   onKey,
   onBail,
 }: TypingActiveZoneProps) {
   const hiddenInputRef = useRef<HTMLInputElement>(null);
-  const wordsRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
   const activeWordRef = useRef<HTMLSpanElement>(null);
   const caretRef = useRef<HTMLDivElement>(null);
   const [focused, setFocused] = useState(true);
@@ -43,8 +54,6 @@ export function TypingActiveZone({
     focusInput();
   }, [focusInput]);
 
-  // Re-acquire focus after rendered changes (e.g., after a key press the
-  // browser may steal focus on iOS); harmless on desktop.
   useEffect(() => {
     if (focused) focusInput();
   }, [focused, focusInput]);
@@ -56,8 +65,6 @@ export function TypingActiveZone({
         onBail();
         return;
       }
-      // Only forward when focus is *not* in our hidden input — the input's
-      // onKeyDown handles the captured case.
       const target = e.target as HTMLElement | null;
       if (target === hiddenInputRef.current) return;
       onKey(e);
@@ -66,44 +73,49 @@ export function TypingActiveZone({
     return () => window.removeEventListener("keydown", onWindowKey);
   }, [onKey, onBail]);
 
-  // Position the caret over the active character
-  // biome-ignore lint/correctness/useExhaustiveDependencies: refs are read from DOM; rendered/currentWord trigger DOM mutations that the effect must observe
+  // Position caret + scroll track so the active line stays on the middle row.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: rendered/currentWord trigger DOM mutations the effect must observe
   useLayoutEffect(() => {
-    const wordsEl = wordsRef.current;
+    const track = trackRef.current;
     const wordEl = activeWordRef.current;
     const caretEl = caretRef.current;
-    if (!wordsEl || !wordEl || !caretEl) return;
+    if (!track || !wordEl || !caretEl) return;
+
     const charSpans = wordEl.querySelectorAll<HTMLSpanElement>("[data-char]");
-    const containerBox = wordsEl.getBoundingClientRect();
-    let left: number;
-    let top: number;
-    let height: number;
+    const trackRect = track.getBoundingClientRect();
+
+    let charLeft: number;
+    let charTop: number;
+    let charHeight: number;
+
     if (typedWordLength < charSpans.length) {
       const span = charSpans[typedWordLength];
       if (!span) return;
-      const box = span.getBoundingClientRect();
-      left = box.left - containerBox.left;
-      top = box.top - containerBox.top;
-      height = box.height;
+      const r = span.getBoundingClientRect();
+      charLeft = r.left - trackRect.left;
+      charTop = r.top - trackRect.top;
+      charHeight = r.height;
     } else if (charSpans.length > 0) {
-      // caret sits after the last char (extras region)
       const span = charSpans[charSpans.length - 1];
       if (!span) return;
-      const box = span.getBoundingClientRect();
-      left = box.right - containerBox.left;
-      top = box.top - containerBox.top;
-      height = box.height;
+      const r = span.getBoundingClientRect();
+      charLeft = r.right - trackRect.left;
+      charTop = r.top - trackRect.top;
+      charHeight = r.height;
     } else {
-      const box = wordEl.getBoundingClientRect();
-      left = box.left - containerBox.left;
-      top = box.top - containerBox.top;
-      height = box.height;
+      const r = wordEl.getBoundingClientRect();
+      charLeft = r.left - trackRect.left;
+      charTop = r.top - trackRect.top;
+      charHeight = r.height;
     }
-    caretEl.style.transform = `translate(${left}px, ${top}px)`;
-    caretEl.style.height = `${height}px`;
 
-    // Scroll active word into view
-    wordEl.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    const lineHeight = charHeight > 0 ? charHeight : 1;
+    const lineIndex = Math.round(charTop / lineHeight);
+    const trackOffsetY = Math.min(0, -(lineIndex - 1) * lineHeight);
+
+    track.style.transform = `translateY(${trackOffsetY}px)`;
+    caretEl.style.transform = `translate(${charLeft}px, ${charTop + trackOffsetY}px)`;
+    caretEl.style.height = `${charHeight}px`;
   }, [rendered, currentWord, typedWordLength]);
 
   const remainingSec = Math.ceil(remainingMs / 1000);
@@ -122,34 +134,40 @@ export function TypingActiveZone({
       </div>
 
       <div
-        ref={wordsRef}
-        className={`${styles.words} ${focused ? "" : styles.wordsBlurred}`}
+        ref={viewportRef}
+        className={`${styles.viewport} ${focused ? "" : styles.viewportBlurred}`}
         style={{ fontFamily }}
       >
-        {rendered.map((word, w) => {
-          const isActive = w === currentWord;
-          return (
-            <span
-              ref={isActive ? activeWordRef : undefined}
-              // biome-ignore lint/suspicious/noArrayIndexKey: words are append-only; index identity is stable
-              key={`w-${w}`}
-              className={`${styles.word} ${isActive ? styles.wordActive : ""}`}
-            >
-              {word.chars.map((c, i) => (
-                <span
-                  // biome-ignore lint/suspicious/noArrayIndexKey: chars within a word are append-only; index identity is stable
-                  key={`c-${w}-${i}`}
-                  data-char
-                  className={`${styles.char} ${styles[`char-${c.state}`]}`}
-                >
-                  {c.char}
-                </span>
-              ))}
-              {w < rendered.length - 1 && <CaretSpacer />}
-            </span>
-          );
-        })}
-        <div ref={caretRef} className={styles.caret} aria-hidden="true" />
+        <div ref={trackRef} className={styles.track}>
+          {rendered.map((word, w) => {
+            const isActive = w === currentWord;
+            return (
+              <span
+                ref={isActive ? activeWordRef : undefined}
+                // biome-ignore lint/suspicious/noArrayIndexKey: words are append-only; index identity is stable
+                key={`w-${w}`}
+                className={`${styles.word} ${isActive ? styles.wordActive : ""}`}
+              >
+                {word.chars.map((c, i) => (
+                  <span
+                    // biome-ignore lint/suspicious/noArrayIndexKey: chars within a word are append-only; index identity is stable
+                    key={`c-${w}-${i}`}
+                    data-char
+                    className={`${styles.char} ${styles[`char-${c.state}`]}`}
+                  >
+                    {c.char}
+                  </span>
+                ))}
+                {w < rendered.length - 1 && <CaretSpacer />}
+              </span>
+            );
+          })}
+        </div>
+        <div
+          ref={caretRef}
+          className={`${styles.caret} ${CARET_STYLE_CLASS[caretStyle]}`}
+          aria-hidden="true"
+        />
       </div>
 
       {!focused && (
@@ -177,7 +195,6 @@ export function TypingActiveZone({
           }
           onKey(e.nativeEvent);
         }}
-        // Keep the visible value empty; we read keystrokes from keydown.
         value=""
         onChange={() => {
           /* swallow; keydown is source of truth */

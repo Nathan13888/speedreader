@@ -1,7 +1,14 @@
 "use client";
 
 import { FontDropdown } from "../shared/FontDropdown";
-import { type TypingConfig, type TypingDuration, TYPING_DURATIONS } from "../../lib/typing/types";
+import {
+  CARET_STYLE_LABEL,
+  CARET_STYLES,
+  type CaretStyle,
+  type TypingConfig,
+  type TypingDuration,
+  TYPING_DURATIONS,
+} from "../../lib/typing/types";
 import styles from "./TypingConfigZone.module.css";
 
 interface TypingConfigZoneProps {
@@ -67,6 +74,24 @@ export function TypingConfigZone({
         <div className={styles.row}>
           <span className={styles.label}>Word list</span>
           <span className={styles.staticValue}>English top 1000</span>
+        </div>
+
+        <div className={styles.row}>
+          <span className={styles.label}>Caret motion</span>
+          <div className={styles.segmented}>
+            {CARET_STYLES.map((s) => (
+              <button
+                key={s}
+                type="button"
+                aria-pressed={config.caretStyle === s}
+                className={`${styles.segBtn} ${config.caretStyle === s ? styles.segBtnActive : ""}`}
+                onClick={() => patch({ caretStyle: s as CaretStyle })}
+                title={`Caret motion: ${CARET_STYLE_LABEL[s]}`}
+              >
+                {CARET_STYLE_LABEL[s]}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className={styles.row}>
