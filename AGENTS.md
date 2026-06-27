@@ -62,6 +62,10 @@ bun run lint
 bun run lint:fix
 ```
 
+## Design
+
+See [DESIGN.md](DESIGN.md) for the locked-down visual language: color tokens, type scale, component patterns, and accent-usage rules. Consult before adding or restyling UI.
+
 ## Conventions
 
 - Use strict TypeScript — no `any` types
