@@ -1,0 +1,161 @@
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 40px 16px 60px;
+  gap: 32px;
+}
+
+.header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.title {
+  font-size: clamp(28px, 5vw, 42px);
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: var(--text);
+}
+
+.titleAccent {
+  color: var(--accent);
+}
+
+.tagline {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: 13px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.staticValue {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.segBtn {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  min-height: 36px;
+}
+
+.segBtn + .segBtn {
+  border-left: 1px solid var(--border);
+}
+
+.segBtn:hover {
+  color: var(--text);
+}
+
+.segBtnActive {
+  background: var(--surface-2);
+  color: var(--accent);
+}
+
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.toggleOn {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.toggleThumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--text);
+  transition: transform 0.15s;
+}
+
+.toggleOn .toggleThumb {
+  background: #000;
+  transform: translateX(20px);
+}
+
+.startBtn {
+  margin-top: 8px;
+  padding: 14px 20px;
+  background: var(--accent);
+  color: #000;
+  font-weight: 700;
+  font-size: 15px;
+  border-radius: var(--radius);
+  min-height: 48px;
+}
+
+.startBtn:hover {
+  opacity: 0.88;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 4px;
+}
+
+.hint kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  margin: 0 2px;
+}
