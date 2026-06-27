@@ -178,6 +178,15 @@ export function TypingConfigZone({
         )}
 
         <div className={styles.row}>
+          <span className={styles.label}>Keyboard HUD</span>
+          <Toggle
+            on={config.showKeyboardHud}
+            onChange={(on) => patch({ showKeyboardHud: on })}
+            label="Keyboard HUD"
+          />
+        </div>
+
+        <div className={styles.row}>
           <span className={styles.label}>Font</span>
           <FontDropdown currentFontId={fontId} onFontChange={onFontChange} position="below" />
         </div>

@@ -3,6 +3,7 @@ import {
   type CaretStyle,
   DEFAULT_DISPLAY_CHORDS,
   DEFAULT_INPUT_MODE,
+  DEFAULT_SHOW_KEYBOARD_HUD,
   DEFAULT_STENO_THEORY,
   DEFAULT_TYPING_CONFIG,
   type Discipline,
@@ -22,6 +23,7 @@ const TYPING_HISTORY_KEY = "speedreader_typing_history";
 const TYPING_INPUT_MODE_KEY = "speedreader_typing_input_mode";
 const TYPING_THEORY_KEY = "speedreader_typing_theory";
 const TYPING_DISPLAY_CHORDS_KEY = "speedreader_typing_display_chords";
+const TYPING_KEYBOARD_HUD_KEY = "speedreader_typing_keyboard_hud";
 
 export interface SessionSnapshot {
   text: string;
@@ -116,7 +118,10 @@ export function saveDiscipline(discipline: Discipline): void {
 
 function isValidBaseConfig(
   value: unknown,
-): value is Omit<TypingConfig, "caretStyle" | "inputMode" | "theory" | "displayChords"> {
+): value is Omit<
+  TypingConfig,
+  "caretStyle" | "inputMode" | "theory" | "displayChords" | "showKeyboardHud"
+> {
   if (!value || typeof value !== "object") return false;
   const c = value as Record<string, unknown>;
   return (
@@ -149,12 +154,20 @@ export function loadTypingConfig(): TypingConfig | null {
       typeof maybe.displayChords === "boolean"
         ? maybe.displayChords
         : DEFAULT_TYPING_CONFIG.displayChords;
+    const showKeyboardHud =
+      typeof maybe.showKeyboardHud === "boolean"
+        ? maybe.showKeyboardHud
+        : DEFAULT_TYPING_CONFIG.showKeyboardHud;
     return {
-      ...(parsed as Omit<TypingConfig, "caretStyle" | "inputMode" | "theory" | "displayChords">),
+      ...(parsed as Omit<
+        TypingConfig,
+        "caretStyle" | "inputMode" | "theory" | "displayChords" | "showKeyboardHud"
+      >),
       caretStyle,
       inputMode,
       theory,
       displayChords,
+      showKeyboardHud,
     };
   } catch {
     return null;
@@ -248,6 +261,25 @@ export function loadDisplayChords(): boolean {
 export function saveDisplayChords(value: boolean): void {
   try {
     localStorage.setItem(TYPING_DISPLAY_CHORDS_KEY, String(value));
+  } catch {
+    // ignore
+  }
+}
+
+export function loadShowKeyboardHud(): boolean {
+  try {
+    const raw = localStorage.getItem(TYPING_KEYBOARD_HUD_KEY);
+    if (raw === "true") return true;
+    if (raw === "false") return false;
+    return DEFAULT_SHOW_KEYBOARD_HUD;
+  } catch {
+    return DEFAULT_SHOW_KEYBOARD_HUD;
+  }
+}
+
+export function saveShowKeyboardHud(value: boolean): void {
+  try {
+    localStorage.setItem(TYPING_KEYBOARD_HUD_KEY, String(value));
   } catch {
     // ignore
   }

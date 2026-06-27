@@ -1,9 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useKeyboardPress } from "../../hooks/useKeyboardPress";
 import type { RenderedWord } from "../../lib/typing/charState";
 import type { DictionaryWorkerClient } from "../../lib/typing/steno/workerClient";
-import type { CaretStyle } from "../../lib/typing/types";
+import type { CaretStyle, TypingInputMode } from "../../lib/typing/types";
+import { KeyboardHud } from "./KeyboardHud";
 import { StenoHintOverlay } from "./StenoHintOverlay";
 import styles from "./TypingActiveZone.module.css";
 
@@ -22,6 +24,8 @@ interface TypingActiveZoneProps {
   stenoClient: DictionaryWorkerClient | null;
   showHints: boolean;
   targetSuffix: string;
+  inputMode: TypingInputMode;
+  showKeyboardHud: boolean;
 }
 
 const CARET_STYLE_CLASS: Record<CaretStyle, string> = {
@@ -49,7 +53,10 @@ export function TypingActiveZone({
   stenoClient,
   showHints,
   targetSuffix,
+  inputMode,
+  showKeyboardHud,
 }: TypingActiveZoneProps) {
+  const pressedKeys = useKeyboardPress(showKeyboardHud);
   const hiddenInputRef = useRef<HTMLInputElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -223,6 +230,8 @@ export function TypingActiveZone({
           /* swallow; keydown is source of truth */
         }}
       />
+
+      {showKeyboardHud && <KeyboardHud inputMode={inputMode} pressed={pressedKeys} />}
     </div>
   );
 }

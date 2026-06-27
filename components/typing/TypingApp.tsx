@@ -8,10 +8,12 @@ import { getFontById } from "../../lib/fonts";
 import {
   loadDisplayChords,
   loadInputMode,
+  loadShowKeyboardHud,
   loadStenoTheory,
   loadTypingConfig,
   saveDisplayChords,
   saveInputMode,
+  saveShowKeyboardHud,
   saveStenoTheory,
   saveTypingConfig,
 } from "../../lib/session";
@@ -49,11 +51,13 @@ export function TypingApp({ fontId, onFontChange }: TypingAppProps) {
     const inputMode = loadInputMode();
     const theory = loadStenoTheory();
     const displayChords = loadDisplayChords();
+    const showKeyboardHud = loadShowKeyboardHud();
     const next: TypingConfig = {
       ...(saved ?? DEFAULT_TYPING_CONFIG),
       inputMode,
       theory,
       displayChords,
+      showKeyboardHud,
     };
     setHydratedConfig(next);
     test.reset(next);
@@ -120,6 +124,7 @@ export function TypingApp({ fontId, onFontChange }: TypingAppProps) {
     saveInputMode(next.inputMode);
     saveStenoTheory(next.theory);
     saveDisplayChords(next.displayChords);
+    saveShowKeyboardHud(next.showKeyboardHud);
     test.reset(next);
   }
 
@@ -202,6 +207,8 @@ export function TypingApp({ fontId, onFontChange }: TypingAppProps) {
           stenoClient={stenoClient}
           showHints={isSteno && hydratedConfig.displayChords}
           targetSuffix={targetSuffix}
+          inputMode={hydratedConfig.inputMode}
+          showKeyboardHud={hydratedConfig.showKeyboardHud}
         />
       )}
       {view === "results" && (

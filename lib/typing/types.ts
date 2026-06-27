@@ -29,6 +29,8 @@ export const DEFAULT_STENO_THEORY = "plover";
 
 export const DEFAULT_DISPLAY_CHORDS = true;
 
+export const DEFAULT_SHOW_KEYBOARD_HUD = true;
+
 export interface TypingConfig {
   duration: TypingDuration;
   punctuation: boolean;
@@ -38,6 +40,7 @@ export interface TypingConfig {
   inputMode: TypingInputMode;
   theory: string;
   displayChords: boolean;
+  showKeyboardHud: boolean;
 }
 
 export const DEFAULT_TYPING_CONFIG: TypingConfig = {
@@ -49,6 +52,7 @@ export const DEFAULT_TYPING_CONFIG: TypingConfig = {
   inputMode: DEFAULT_INPUT_MODE,
   theory: DEFAULT_STENO_THEORY,
   displayChords: DEFAULT_DISPLAY_CHORDS,
+  showKeyboardHud: DEFAULT_SHOW_KEYBOARD_HUD,
 };
 
 export interface TypingMetrics {

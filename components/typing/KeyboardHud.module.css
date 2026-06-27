@@ -1,0 +1,108 @@
+.dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding: 16px 16px 20px;
+  background: linear-gradient(to top, var(--bg) 60%, rgba(13, 13, 13, 0) 100%);
+  pointer-events: none;
+  z-index: 30;
+}
+
+.board {
+  --khud-unit: 36px;
+  --khud-gap: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--khud-gap);
+  padding: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  max-width: 100%;
+}
+
+.row {
+  display: flex;
+  gap: var(--khud-gap);
+}
+
+.key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--khud-unit);
+  padding: 0 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  transition:
+    background 0.06s linear,
+    color 0.06s linear,
+    border-color 0.06s linear;
+  overflow: hidden;
+}
+
+.label {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.keyMuted {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.keyStenoMapped {
+  color: var(--text);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.keyPressed {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+}
+
+.keyPressed.keyMuted {
+  color: #000;
+}
+
+@media (max-width: 900px) {
+  .board {
+    --khud-unit: 30px;
+  }
+  .key {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 720px) {
+  .board {
+    --khud-unit: 26px;
+    padding: 8px;
+  }
+  .key {
+    font-size: 10px;
+  }
+  .keyMuted {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dock {
+    display: none;
+  }
+}
