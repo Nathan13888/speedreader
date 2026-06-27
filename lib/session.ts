@@ -3,10 +3,10 @@ import {
   type CaretStyle,
   DEFAULT_TYPING_CONFIG,
   type Discipline,
-  type TypingConfig,
-  type TypingResult,
   TYPING_DURATIONS,
   TYPING_HISTORY_LIMIT,
+  type TypingConfig,
+  type TypingResult,
 } from "./typing/types";
 
 const SESSION_KEY = "speedreader_session";

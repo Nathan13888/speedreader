@@ -1,14 +1,14 @@
 "use client";
 
-import { FontDropdown } from "../shared/FontDropdown";
 import {
   CARET_STYLE_LABEL,
   CARET_STYLES,
   type CaretStyle,
+  TYPING_DURATIONS,
   type TypingConfig,
   type TypingDuration,
-  TYPING_DURATIONS,
 } from "../../lib/typing/types";
+import { FontDropdown } from "../shared/FontDropdown";
 import styles from "./TypingConfigZone.module.css";
 
 interface TypingConfigZoneProps {

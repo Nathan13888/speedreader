@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { computeCharStates, computeMetrics, type RenderedWord } from "../lib/typing/charState";
 import { appendTypingHistory } from "../lib/session";
+import { computeCharStates, computeMetrics, type RenderedWord } from "../lib/typing/charState";
 import type { TypingConfig, TypingMetrics, TypingResult } from "../lib/typing/types";
 import { randomSeed, sampleWords } from "../lib/typing/wordBank";
 

@@ -1,5 +1,5 @@
-import english1k from "./words/english_1k.json";
 import { normalizeForTyping, type TypingNormalizeOptions } from "./normalize";
+import english1k from "./words/english_1k.json";
 
 export interface WordList {
   id: string;

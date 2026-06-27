@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTypingTest } from "../../hooks/useTypingTest";
 import { getFontById } from "../../lib/fonts";
 import { loadTypingConfig, saveTypingConfig } from "../../lib/session";
 import { DEFAULT_TYPING_CONFIG, type TypingConfig } from "../../lib/typing/types";
-import { useTypingTest } from "../../hooks/useTypingTest";
-import styles from "./TypingApp.module.css";
 import { TypingActiveZone } from "./TypingActiveZone";
+import styles from "./TypingApp.module.css";
 import { TypingConfigZone } from "./TypingConfigZone";
 import { TypingResultsZone } from "./TypingResultsZone";
 

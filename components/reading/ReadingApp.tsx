@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { loadSession } from "../../lib/session";
 import { IngestionZone } from "../ingestion/IngestionZone";
 import { ReaderZone } from "../reader/ReaderZone";
 import { FontDropdown } from "../shared/FontDropdown";
-import { loadSession } from "../../lib/session";
 import styles from "./ReadingApp.module.css";
 
 type ResumePromptState = "pending" | "dismissed";

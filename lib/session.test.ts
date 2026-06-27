@@ -7,7 +7,7 @@ import {
   saveDiscipline,
   saveTypingConfig,
 } from "./session";
-import { DEFAULT_TYPING_CONFIG, type TypingResult, TYPING_HISTORY_LIMIT } from "./typing/types";
+import { DEFAULT_TYPING_CONFIG, TYPING_HISTORY_LIMIT, type TypingResult } from "./typing/types";
 
 class MemoryStorage {
   private store = new Map<string, string>();
